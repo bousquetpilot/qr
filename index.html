@@ -1,61 +1,72 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon QR Code</title>
 
-    <style>
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #f5f5f5;
-            font-family: Arial, sans-serif;
+    <title>QR Code</title>
+
+    <!--
+        =====================================================
+        CONFIGURATION DU QR CODE
+        =====================================================
+
+        Change uniquement la valeur de MODE.
+
+        "site"  = ouvre ton site
+        "image" = ouvre ton image
+        "lien"  = ouvre ton lien
+    -->
+
+    <script>
+
+        const MODE = "site";
+
+
+        /*
+            =================================================
+            NE PAS MODIFIER EN DESSOUS
+            =================================================
+        */
+
+        const destinations = {
+
+            site: "site/",
+
+            image: "image/",
+
+            lien: "lien/"
+
+        };
+
+
+        if (destinations[MODE]) {
+
+            window.location.replace(destinations[MODE]);
+
+        } else {
+
+            document.addEventListener("DOMContentLoaded", () => {
+
+                document.body.innerHTML = `
+                    <h1>Erreur</h1>
+                    <p>La destination du QR code n'est pas configurée correctement.</p>
+                `;
+
+            });
+
         }
 
-        .card {
-            width: 90%;
-            max-width: 500px;
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            text-align: center;
-        }
+    </script>
 
-        h1 {
-            margin-bottom: 10px;
-        }
-
-        p {
-            color: #555;
-        }
-
-        a.button {
-            display: block;
-            margin: 15px 0;
-            padding: 14px;
-            background: #111;
-            color: white;
-            text-decoration: none;
-            border-radius: 10px;
-        }
-    </style>
 </head>
 
 <body>
 
-    <div class="card">
-        <h1>Bonjour 👋</h1>
-        <p>Cette page est accessible avec mon QR code.</p>
-
-        <a class="button" href="https://www.instagram.com/" target="_blank">
-            Instagram
-        </a>
-    </div>
+    <p>Redirection...</p>
 
 </body>
+
 </html>
