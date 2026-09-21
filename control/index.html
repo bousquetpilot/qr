@@ -127,12 +127,22 @@
             display: none;
         }
 
+        /* MESSAGE DE CONFIRMATION */
+
         #message {
             text-align: center;
 
             margin-top: 15px;
 
             color: #555;
+
+            opacity: 1;
+
+            transition: opacity 0.6s ease;
+        }
+
+        #message.hidden {
+            opacity: 0;
         }
 
     </style>
@@ -176,6 +186,7 @@
     <div id="controlCard" class="card hidden">
 
         <h1>QR Control</h1>
+
 
         <div class="destination">
 
@@ -225,7 +236,7 @@
         </button>
 
 
-        <div id="message"></div>
+        <div id="message" class="hidden"></div>
 
 
         <button
@@ -431,8 +442,33 @@
         }
 
 
-        document.getElementById("message").textContent =
+        // MESSAGE DE CONFIRMATION
+
+        const message =
+            document.getElementById("message");
+
+
+        message.textContent =
             "Destination enregistrée ✓";
+
+
+        message.classList.remove("hidden");
+
+
+        // Annule le précédent compte à rebours
+        // si l'utilisateur appuie plusieurs fois.
+
+        clearTimeout(window.messageTimeout);
+
+
+        // Le message disparaît après 5 secondes.
+
+        window.messageTimeout =
+            setTimeout(() => {
+
+                message.classList.add("hidden");
+
+            }, 5000);
 
     }
 
