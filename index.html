@@ -2,34 +2,65 @@
 <html lang="fr">
 
 <head>
+
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
-    <title>QR Code</title>
+    <title>QR</title>
 
-    <!--
-        =====================================================
-        CONFIGURATION DU QR CODE
-        =====================================================
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-        Change uniquement la valeur de MODE.
+</head>
 
-        "site"  = ouvre ton site
-        "image" = ouvre ton image
-        "lien"  = ouvre ton lien
-    -->
+<body>
 
-    <script>
-
-        const MODE = "image";
+<p>Redirection...</p>
 
 
-        /*
-            =================================================
-            NE PAS MODIFIER EN DESSOUS
-            =================================================
-        */
+<script>
+
+    const SUPABASE_URL =
+        "https://frdmtstprhyrcozuzkcf.supabase.co";
+
+    const SUPABASE_KEY =
+        "sb_publishable_YkzwqM3E18r1W0ztmJjXug_qJO2htuo";
+
+
+    const supabaseClient =
+        window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_KEY
+        );
+
+
+    async function redirectQR() {
+
+        const { data, error } =
+
+            await supabaseClient
+                .from("qr-control")
+                .select("destination")
+                .eq("id", 1)
+                .single();
+
+
+        if (error) {
+
+            document.body.innerHTML =
+                "<h2>Erreur de connexion</h2>";
+
+            console.error(error);
+
+            return;
+
+        }
+
+
+        const destination =
+            data.destination;
+
 
         const destinations = {
 
@@ -42,30 +73,25 @@
         };
 
 
-        if (destinations[MODE]) {
+        if (destinations[destination]) {
 
-            window.location.replace(destinations[MODE]);
+            window.location.replace(
+                destinations[destination]
+            );
 
         } else {
 
-            document.addEventListener("DOMContentLoaded", () => {
-
-                document.body.innerHTML = `
-                    <h1>Erreur</h1>
-                    <p>La destination du QR code n'est pas configurée correctement.</p>
-                `;
-
-            });
+            document.body.innerHTML =
+                "<h2>Destination inconnue</h2>";
 
         }
 
-    </script>
+    }
 
-</head>
 
-<body>
+    redirectQR();
 
-    <p>Redirection...</p>
+</script>
 
 </body>
 
