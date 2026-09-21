@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>QR Control</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+
+            font-family: Arial, sans-serif;
+
+            background: #f2f2f2;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 430px;
+        }
+
+        .card {
+            background: white;
+
+            padding: 30px;
+
+            border-radius: 22px;
+
+            box-shadow:
+                0 10px 30px rgba(0,0,0,0.10);
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 25px;
+        }
+
+        input {
+            width: 100%;
+
+            padding: 15px;
+
+            margin-bottom: 12px;
+
+            border: 1px solid #ddd;
+
+            border-radius: 10px;
+
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+
+            padding: 16px;
+
+            margin-top: 10px;
+
+            border: none;
+
+            border-radius: 12px;
+
+            background: #111;
+
+            color: white;
+
+            font-size: 16px;
+
+            cursor: pointer;
+        }
+
+        .destination {
+            padding: 18px;
+
+            margin: 15px 0;
+
+            border-radius: 12px;
+
+            background: #f1f1f1;
+
+            text-align: center;
+
+            font-size: 18px;
+        }
+
+        .choice {
+            background: white;
+
+            color: #111;
+
+            border: 2px solid #ddd;
+        }
+
+        .choice.selected {
+            border-color: #111;
+
+            background: #eee;
+        }
+
+        .logout {
+            background: #777;
+
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #message {
+            text-align: center;
+
+            margin-top: 15px;
+
+            color: #555;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <!-- LOGIN -->
+
+    <div id="loginCard" class="card">
+
+        <h1>QR Control</h1>
+
+        <input
+            id="email"
+            type="email"
+            placeholder="Email"
+        >
+
+        <input
+            id="password"
+            type="password"
+            placeholder="Mot de passe"
+        >
+
+        <button onclick="login()">
+            Se connecter
+        </button>
+
+        <div id="loginMessage"></div>
+
+    </div>
+
+
+    <!-- CONTROL PANEL -->
+
+    <div id="controlCard" class="card hidden">
+
+        <h1>QR Control</h1>
+
+        <div class="destination">
+
+            Destination actuelle :
+
+            <strong id="currentDestination">
+                ...
+            </strong>
+
+        </div>
+
+
+        <button
+            class="choice"
+            id="siteButton"
+            onclick="selectDestination('site')">
+
+            🌐 SITE
+
+        </button>
+
+
+        <button
+            class="choice"
+            id="imageButton"
+            onclick="selectDestination('image')">
+
+            🖼️ IMAGE
+
+        </button>
+
+
+        <button
+            class="choice"
+            id="lienButton"
+            onclick="selectDestination('lien')">
+
+            🔗 LIEN
+
+        </button>
+
+
+        <button onclick="saveDestination()">
+
+            APPLIQUER
+
+        </button>
+
+
+        <div id="message"></div>
+
+
+        <button
+            class="logout"
+            onclick="logout()">
+
+            Se déconnecter
+
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    // =====================================================
+    // SUPABASE
+    // =====================================================
+
+    const SUPABASE_URL =
+        "https://frdmtstprhyrcozuzkcf.supabase.co";
+
+    const SUPABASE_KEY =
+        "sb_publishable_YkzwqM3E18r1W0ztmJjXug_qJO2htuo";
+
+
+    const supabaseClient =
+        window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_KEY
+        );
+
+
+    let selectedDestination = null;
+
+
+    // =====================================================
+    // LOGIN
+    // =====================================================
+
+    async function login() {
+
+        const email =
+            document.getElementById("email").value;
+
+        const password =
+            document.getElementById("password").value;
+
+
+        const { data, error } =
+            await supabaseClient.auth.signInWithPassword({
+
+                email: email,
+
+                password: password
+
+            });
+
+
+        if (error) {
+
+            document.getElementById("loginMessage").textContent =
+                "Erreur : " + error.message;
+
+            return;
+
+        }
+
+
+        showControlPanel();
+
+    }
+
+
+    // =====================================================
+    // AFFICHER LE PANNEAU
+    // =====================================================
+
+    async function showControlPanel() {
+
+        document
+            .getElementById("loginCard")
+            .classList.add("hidden");
+
+
+        document
+            .getElementById("controlCard")
+            .classList.remove("hidden");
+
+
+        await loadDestination();
+
+    }
+
+
+    // =====================================================
+    // LIRE LA DESTINATION
+    // =====================================================
+
+    async function loadDestination() {
+
+        const { data, error } =
+
+            await supabaseClient
+                .from("qr-control")
+                .select("destination")
+                .eq("id", 1)
+                .single();
+
+
+        if (error) {
+
+            document.getElementById("message").textContent =
+                "Erreur : " + error.message;
+
+            return;
+
+        }
+
+
+        selectedDestination =
+            data.destination;
+
+
+        updateInterface();
+
+    }
+
+
+    // =====================================================
+    // CHOISIR UNE DESTINATION
+    // =====================================================
+
+    function selectDestination(destination) {
+
+        selectedDestination =
+            destination;
+
+
+        updateInterface();
+
+    }
+
+
+    // =====================================================
+    // METTRE À JOUR L'INTERFACE
+    // =====================================================
+
+    function updateInterface() {
+
+        document
+            .getElementById("currentDestination")
+            .textContent =
+                selectedDestination;
+
+
+        document
+            .querySelectorAll(".choice")
+            .forEach(button => {
+
+                button.classList.remove("selected");
+
+            });
+
+
+        document
+            .getElementById(
+                selectedDestination + "Button"
+            )
+            .classList.add("selected");
+
+    }
+
+
+    // =====================================================
+    // SAUVEGARDER
+    // =====================================================
+
+    async function saveDestination() {
+
+        const { error } =
+
+            await supabaseClient
+                .from("qr-control")
+                .update({
+
+                    destination:
+                        selectedDestination
+
+                })
+                .eq("id", 1);
+
+
+        if (error) {
+
+            document.getElementById("message").textContent =
+                "Erreur : " + error.message;
+
+            return;
+
+        }
+
+
+        document.getElementById("message").textContent =
+            "Destination enregistrée ✓";
+
+    }
+
+
+    // =====================================================
+    // LOGOUT
+    // =====================================================
+
+    async function logout() {
+
+        await supabaseClient.auth.signOut();
+
+        location.reload();
+
+    }
+
+
+    // =====================================================
+    // VÉRIFIER SI DÉJÀ CONNECTÉ
+    // =====================================================
+
+    async function checkSession() {
+
+        const { data } =
+            await supabaseClient.auth.getSession();
+
+
+        if (data.session) {
+
+            showControlPanel();
+
+        }
+
+    }
+
+
+    checkSession();
+
+</script>
+
+</body>
+
+</html>
