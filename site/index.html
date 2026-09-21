@@ -1,16 +1,136 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Romain Bousquet</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f2f2f2;
+            color: #111;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            margin: auto;
+            padding: 30px 20px;
+        }
+
+        .profile {
+            text-align: center;
+        }
+
+        .profile img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            margin: 5px 0;
+            font-size: 28px;
+        }
+
+        .description {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .button {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            margin: 12px 0;
+
+            background: white;
+            color: #111;
+
+            text-decoration: none;
+
+            border-radius: 12px;
+
+            text-align: center;
+
+            font-size: 17px;
+
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+
+            transition: 0.2s;
+        }
+
+        .button:hover {
+            transform: scale(1.02);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #999;
+            font-size: 13px;
+        }
+
+    </style>
+
 </head>
 
 <body>
 
-    <h1>Romain Bousquet</h1>
+<div class="container">
 
-    <p>Ma page personnelle évolutive.</p>
+    <div class="profile">
+
+        <img src="photo.jpg" alt="Photo">
+
+        <h1>Romain Bousquet</h1>
+
+        <div class="description">
+            Pilot ✈️
+        </div>
+
+    </div>
+
+
+    <a class="button" href="tel:+33000000000">
+        📞 Téléphone
+    </a>
+
+
+    <a class="button" href="mailto:tonemail@example.com">
+        ✉️ Email
+    </a>
+
+
+    <a class="button" href="https://www.instagram.com/" target="_blank">
+        📷 Instagram
+    </a>
+
+
+    <a class="button" href="#" target="_blank">
+        📄 Mon CV
+    </a>
+
+
+    <div class="footer">
+        QR Digital Card
+    </div>
+
+</div>
 
 </body>
+
 </html>
