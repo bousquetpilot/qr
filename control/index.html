@@ -87,7 +87,17 @@
             font-size: 16px;
 
             cursor: pointer;
+
+            transition: transform 0.1s ease;
         }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        /* =========================
+           DESTINATION ACTUELLE
+           ========================= */
 
         .destination {
             padding: 18px;
@@ -103,6 +113,19 @@
             font-size: 18px;
         }
 
+        .destination strong {
+            display: block;
+
+            margin-top: 6px;
+
+            font-size: 22px;
+        }
+
+
+        /* =========================
+           BOUTONS DE DESTINATION
+           ========================= */
+
         .choice {
             background: white;
 
@@ -117,17 +140,10 @@
             background: #eee;
         }
 
-        .logout {
-            background: #777;
 
-            margin-top: 20px;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        /* MESSAGE DE CONFIRMATION */
+        /* =========================
+           MESSAGE
+           ========================= */
 
         #message {
             text-align: center;
@@ -145,6 +161,22 @@
             opacity: 0;
         }
 
+
+        /* =========================
+           LOGOUT
+           ========================= */
+
+        .logout {
+            background: #777;
+
+            margin-top: 20px;
+        }
+
+
+        .hidden {
+            display: none;
+        }
+
     </style>
 
 </head>
@@ -154,7 +186,10 @@
 
 <div class="container">
 
-    <!-- LOGIN -->
+
+    <!-- =====================================================
+         LOGIN
+         ===================================================== -->
 
     <div id="loginCard" class="card">
 
@@ -173,7 +208,9 @@
         >
 
         <button onclick="login()">
+
             Se connecter
+
         </button>
 
         <div id="loginMessage"></div>
@@ -181,12 +218,17 @@
     </div>
 
 
-    <!-- CONTROL PANEL -->
+
+    <!-- =====================================================
+         CONTROL PANEL
+         ===================================================== -->
 
     <div id="controlCard" class="card hidden">
 
         <h1>QR Control</h1>
 
+
+        <!-- DESTINATION RÉELLEMENT ENREGISTRÉE -->
 
         <div class="destination">
 
@@ -198,6 +240,9 @@
 
         </div>
 
+
+
+        <!-- CHOIX TEMPORAIRE -->
 
         <button
             class="choice"
@@ -229,6 +274,9 @@
         </button>
 
 
+
+        <!-- APPLICATION DU CHOIX -->
+
         <button onclick="saveDestination()">
 
             APPLIQUER
@@ -236,8 +284,17 @@
         </button>
 
 
-        <div id="message" class="hidden"></div>
 
+        <!-- MESSAGE DE CONFIRMATION -->
+
+        <div
+            id="message"
+            class="hidden">
+        </div>
+
+
+
+        <!-- DÉCONNEXION -->
 
         <button
             class="logout"
@@ -252,7 +309,9 @@
 </div>
 
 
+
 <script>
+
 
     // =====================================================
     // SUPABASE
@@ -260,6 +319,7 @@
 
     const SUPABASE_URL =
         "https://frdmtstprhyrcozuzkcf.supabase.co";
+
 
     const SUPABASE_KEY =
         "sb_publishable_YkzwqM3E18r1W0ztmJjXug_qJO2htuo";
@@ -272,7 +332,27 @@
         );
 
 
+
+    // =====================================================
+    // VARIABLES
+    // =====================================================
+
+    // Choix actuellement sélectionné par l'utilisateur.
+    //
+    // Ce n'est PAS forcément la destination active.
+
     let selectedDestination = null;
+
+
+    // Destination réellement enregistrée dans Supabase.
+
+    let currentDestination = null;
+
+
+    // Timer du message de confirmation.
+
+    let messageTimeout = null;
+
 
 
     // =====================================================
@@ -283,6 +363,7 @@
 
         const email =
             document.getElementById("email").value;
+
 
         const password =
             document.getElementById("password").value;
@@ -300,8 +381,10 @@
 
         if (error) {
 
-            document.getElementById("loginMessage").textContent =
-                "Erreur : " + error.message;
+            document
+                .getElementById("loginMessage")
+                .textContent =
+                    "Erreur : " + error.message;
 
             return;
 
@@ -311,6 +394,7 @@
         showControlPanel();
 
     }
+
 
 
     // =====================================================
@@ -334,8 +418,9 @@
     }
 
 
+
     // =====================================================
-    // LIRE LA DESTINATION
+    // LIRE LA DESTINATION RÉELLE
     // =====================================================
 
     async function loadDestination() {
@@ -351,16 +436,27 @@
 
         if (error) {
 
-            document.getElementById("message").textContent =
-                "Erreur : " + error.message;
+            document
+                .getElementById("message")
+                .textContent =
+                    "Erreur : " + error.message;
 
             return;
 
         }
 
 
-        selectedDestination =
+        // Destination réellement active.
+
+        currentDestination =
             data.destination;
+
+
+        // Le choix initial est le même que
+        // la destination réellement active.
+
+        selectedDestination =
+            currentDestination;
 
 
         updateInterface();
@@ -368,11 +464,14 @@
     }
 
 
+
     // =====================================================
     // CHOISIR UNE DESTINATION
     // =====================================================
 
     function selectDestination(destination) {
+
+        // On change uniquement le choix temporaire.
 
         selectedDestination =
             destination;
@@ -383,17 +482,26 @@
     }
 
 
+
     // =====================================================
     // METTRE À JOUR L'INTERFACE
     // =====================================================
 
     function updateInterface() {
 
+        // IMPORTANT :
+        //
+        // "Destination actuelle" affiche toujours
+        // ce qui est réellement enregistré dans Supabase.
+
         document
             .getElementById("currentDestination")
             .textContent =
-                selectedDestination;
+                currentDestination;
 
+
+        // Le bouton sélectionné correspond au choix
+        // que l'utilisateur est en train de préparer.
 
         document
             .querySelectorAll(".choice")
@@ -404,20 +512,44 @@
             });
 
 
-        document
-            .getElementById(
-                selectedDestination + "Button"
-            )
-            .classList.add("selected");
+        if (selectedDestination) {
+
+            document
+                .getElementById(
+                    selectedDestination + "Button"
+                )
+                .classList.add("selected");
+
+        }
 
     }
 
 
+
     // =====================================================
-    // SAUVEGARDER
+    // SAUVEGARDER / APPLIQUER
     // =====================================================
 
     async function saveDestination() {
+
+
+        // -------------------------------------------------
+        // 1. CACHER IMMÉDIATEMENT L'ANCIEN MESSAGE
+        // -------------------------------------------------
+
+        const message =
+            document.getElementById("message");
+
+
+        clearTimeout(messageTimeout);
+
+
+        message.classList.add("hidden");
+
+
+        // -------------------------------------------------
+        // 2. SAUVEGARDER DANS SUPABASE
+        // -------------------------------------------------
 
         const { error } =
 
@@ -432,21 +564,40 @@
                 .eq("id", 1);
 
 
+        // -------------------------------------------------
+        // 3. GESTION D'UNE ERREUR
+        // -------------------------------------------------
+
         if (error) {
 
-            document.getElementById("message").textContent =
+            message.textContent =
                 "Erreur : " + error.message;
+
+
+            message.classList.remove("hidden");
 
             return;
 
         }
 
 
-        // MESSAGE DE CONFIRMATION
+        // -------------------------------------------------
+        // 4. METTRE À JOUR LA DESTINATION RÉELLE
+        // -------------------------------------------------
 
-        const message =
-            document.getElementById("message");
+        currentDestination =
+            selectedDestination;
 
+
+        // L'interface affiche maintenant la nouvelle
+        // destination comme destination réellement active.
+
+        updateInterface();
+
+
+        // -------------------------------------------------
+        // 5. AFFICHER LA CONFIRMATION
+        // -------------------------------------------------
 
         message.textContent =
             "Destination enregistrée ✓";
@@ -455,15 +606,11 @@
         message.classList.remove("hidden");
 
 
-        // Annule le précédent compte à rebours
-        // si l'utilisateur appuie plusieurs fois.
+        // -------------------------------------------------
+        // 6. NOUVEAU COMPTEUR DE 5 SECONDES
+        // -------------------------------------------------
 
-        clearTimeout(window.messageTimeout);
-
-
-        // Le message disparaît après 5 secondes.
-
-        window.messageTimeout =
+        messageTimeout =
             setTimeout(() => {
 
                 message.classList.add("hidden");
@@ -471,6 +618,7 @@
             }, 5000);
 
     }
+
 
 
     // =====================================================
@@ -486,8 +634,9 @@
     }
 
 
+
     // =====================================================
-    // VÉRIFIER SI DÉJÀ CONNECTÉ
+    // VÉRIFIER LA SESSION
     // =====================================================
 
     async function checkSession() {
@@ -506,6 +655,7 @@
 
 
     checkSession();
+
 
 </script>
 
