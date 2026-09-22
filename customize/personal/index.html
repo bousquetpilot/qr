@@ -1,183 +1,505 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Personal Info</title>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
+
         * {
             box-sizing: border-box;
         }
 
         body {
+
             margin: 0;
+
             min-height: 100vh;
+
             font-family: Arial, sans-serif;
+
             background: #f5f5f7;
+
             display: flex;
+
             justify-content: center;
-            align-items: center;
-            padding: 20px;
+
+            padding: 30px 20px;
         }
+
 
         .container {
+
             width: 100%;
-            max-width: 500px;
+
+            max-width: 520px;
+
             background: white;
-            border-radius: 18px;
+
+            border-radius: 20px;
+
             padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+
+            box-shadow:
+                0 10px 30px rgba(0,0,0,0.08);
         }
+
 
         h1 {
-            margin-top: 0;
-            margin-bottom: 8px;
+
             text-align: center;
+
+            margin-top: 0;
+
+            margin-bottom: 8px;
         }
 
+
         .subtitle {
+
             text-align: center;
+
             color: #777;
+
             margin-bottom: 30px;
         }
 
+
+        .section {
+
+            margin-top: 30px;
+
+            padding-top: 20px;
+
+            border-top: 1px solid #eee;
+        }
+
+
+        .section-title {
+
+            font-size: 18px;
+
+            font-weight: bold;
+
+            margin-bottom: 15px;
+        }
+
+
         label {
+
             display: block;
-            margin-top: 18px;
+
+            margin-top: 16px;
+
             margin-bottom: 7px;
+
             font-weight: bold;
         }
+
 
         input,
         textarea {
+
             width: 100%;
+
             padding: 13px;
+
             border: 1px solid #ddd;
+
             border-radius: 10px;
+
             font-size: 16px;
+
             font-family: inherit;
         }
 
+
         textarea {
+
             min-height: 120px;
+
             resize: vertical;
         }
 
+
         input:focus,
         textarea:focus {
+
             outline: none;
+
             border-color: #5b4bdb;
         }
 
-        button {
-            width: 100%;
-            border: none;
-            border-radius: 10px;
-            padding: 14px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 25px;
+
+        .photo-area {
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            gap: 15px;
         }
 
+
+        #profilePreview {
+
+            width: 150px;
+
+            height: 150px;
+
+            border-radius: 50%;
+
+            object-fit: cover;
+
+            border: 3px solid #eee;
+
+            background: #f1f1f1;
+
+            display: none;
+        }
+
+
+        .no-photo {
+
+            width: 150px;
+
+            height: 150px;
+
+            border-radius: 50%;
+
+            background: #eee;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 50px;
+
+            color: #999;
+        }
+
+
+        .file-input {
+
+            width: 100%;
+
+            padding: 10px;
+
+            background: #f5f5f5;
+        }
+
+
+        button {
+
+            width: 100%;
+
+            border: none;
+
+            border-radius: 10px;
+
+            padding: 14px;
+
+            font-size: 16px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            margin-top: 20px;
+        }
+
+
         .save {
+
             background: #5b4bdb;
+
             color: white;
         }
 
+
         .save:hover {
+
             background: #4939c5;
         }
 
+
         .back {
+
             background: #eee;
+
             color: #333;
+
             margin-top: 10px;
         }
 
+
         #message {
+
             text-align: center;
+
             margin-top: 15px;
+
             min-height: 20px;
         }
 
+
         .success {
+
             color: #16833b;
         }
 
+
         .error {
+
             color: #c62828;
         }
+
+
+        .file-name {
+
+            text-align: center;
+
+            font-size: 14px;
+
+            color: #666;
+        }
+
     </style>
+
 </head>
+
 
 <body>
 
+
 <div class="container">
+
 
     <h1>👤 Personal Info</h1>
 
     <div class="subtitle">
-        Informations affichées sur ta page personnelle
+        Informations affichées sur ton site
     </div>
 
-    <label for="name">Nom</label>
-    <input
-        type="text"
-        id="name"
-        placeholder="Ton nom"
+
+
+    <!-- =========================
+         INFORMATIONS PRINCIPALES
+         ========================= -->
+
+    <div class="section">
+
+        <div class="section-title">
+            Informations principales
+        </div>
+
+
+        <label for="name">
+            Nom
+        </label>
+
+        <input
+            type="text"
+            id="name"
+            placeholder="Romain Bousquet"
+        >
+
+
+        <label for="title">
+            Titre / profession
+        </label>
+
+        <input
+            type="text"
+            id="title"
+            placeholder="✈️ Pilot"
+        >
+
+
+        <label for="phone">
+            Téléphone
+        </label>
+
+        <input
+            type="tel"
+            id="phone"
+            placeholder="+33 ..."
+        >
+
+
+        <label for="email">
+            Email
+        </label>
+
+        <input
+            type="email"
+            id="email"
+            placeholder="ton@email.com"
+        >
+
+
+        <label for="address">
+            Adresse
+        </label>
+
+        <input
+            type="text"
+            id="address"
+            placeholder="Ton adresse"
+        >
+
+
+        <label for="description">
+            Description
+        </label>
+
+        <textarea
+            id="description"
+            placeholder="Quelques informations à propos de toi..."
+        ></textarea>
+
+    </div>
+
+
+
+    <!-- =========================
+         PHOTO
+         ========================= -->
+
+    <div class="section">
+
+        <div class="section-title">
+            📸 Photo de profil
+        </div>
+
+
+        <div class="photo-area">
+
+            <div
+                id="noPhoto"
+                class="no-photo"
+            >
+                👤
+            </div>
+
+            <img
+                id="profilePreview"
+                alt="Photo de profil"
+            >
+
+            <input
+                class="file-input"
+                type="file"
+                id="profileImage"
+                accept="image/*"
+            >
+
+            <div
+                id="photoName"
+                class="file-name"
+            >
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================
+         RÉSEAUX / CV
+         ========================= -->
+
+    <div class="section">
+
+        <div class="section-title">
+            🔗 Liens
+        </div>
+
+
+        <label for="instagram">
+            Instagram
+        </label>
+
+        <input
+            type="url"
+            id="instagram"
+            placeholder="https://www.instagram.com/..."
+        >
+
+
+        <label for="cv">
+            CV
+        </label>
+
+        <input
+            type="file"
+            id="cv"
+            class="file-input"
+            accept=".pdf,application/pdf"
+        >
+
+        <div
+            id="cvName"
+            class="file-name"
+        >
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================
+         ENREGISTRER
+         ========================= -->
+
+    <button
+        class="save"
+        onclick="saveInfo()"
     >
-
-    <label for="phone">Téléphone</label>
-    <input
-        type="tel"
-        id="phone"
-        placeholder="+33 ..."
-    >
-
-    <label for="email">Email</label>
-    <input
-        type="email"
-        id="email"
-        placeholder="ton@email.com"
-    >
-
-    <label for="address">Adresse</label>
-    <input
-        type="text"
-        id="address"
-        placeholder="Ton adresse"
-    >
-
-    <label for="description">Description</label>
-    <textarea
-        id="description"
-        placeholder="Quelques informations à propos de toi..."
-    ></textarea>
-
-    <button class="save" onclick="saveInfo()">
         💾 ENREGISTRER
     </button>
 
-    <button class="back" onclick="location.href='../'">
+
+    <button
+        class="back"
+        onclick="location.href='../'"
+    >
         ← RETOUR
     </button>
 
+
     <div id="message"></div>
+
 
 </div>
 
+
+
 <script>
+
 
 const SUPABASE_URL =
     "https://frdmtstprhyrcozuzkcf.supabase.co";
 
+
 const SUPABASE_KEY =
     "sb_publishable_YkzwqM3E18r1W0ztmJjXug_qJO2htuo";
+
 
 const supabaseClient =
     window.supabase.createClient(
@@ -186,20 +508,43 @@ const supabaseClient =
     );
 
 
+const BUCKET = "qr-images";
+
+
+
+let currentProfileImagePath = null;
+
+let currentCvPath = null;
+
+
+
+// =====================================================
+// SESSION
+// =====================================================
+
 async function checkSession() {
 
     const {
         data: { session }
     } = await supabaseClient.auth.getSession();
 
+
     if (!session) {
+
         window.location.href = "../";
+
         return false;
     }
+
 
     return true;
 }
 
+
+
+// =====================================================
+// CHARGER LES INFORMATIONS
+// =====================================================
 
 async function loadInfo() {
 
@@ -207,115 +552,582 @@ async function loadInfo() {
         data,
         error
     } = await supabaseClient
+
         .from("site-content")
-        .select(
-            "name, phone, email, address, description"
-        )
+
+        .select(`
+            name,
+            title,
+            phone,
+            email,
+            address,
+            description,
+            instagram_url,
+            cv_path,
+            profile_image_path
+        `)
+
         .eq("id", 1)
+
         .single();
+
 
     if (error) {
 
-        document.getElementById("message").textContent =
-            "Erreur : " + error.message;
-
-        document.getElementById("message").className =
-            "error";
+        showMessage(
+            "Erreur : " + error.message,
+            true
+        );
 
         return;
     }
 
+
     document.getElementById("name").value =
         data.name || "";
+
+
+    document.getElementById("title").value =
+        data.title || "";
+
 
     document.getElementById("phone").value =
         data.phone || "";
 
+
     document.getElementById("email").value =
         data.email || "";
+
 
     document.getElementById("address").value =
         data.address || "";
 
+
     document.getElementById("description").value =
         data.description || "";
+
+
+    document.getElementById("instagram").value =
+        data.instagram_url || "";
+
+
+    currentProfileImagePath =
+        data.profile_image_path || null;
+
+
+    currentCvPath =
+        data.cv_path || null;
+
+
+    if (currentProfileImagePath) {
+
+        showProfileImage(
+            currentProfileImagePath
+        );
+    }
+
+
+    if (currentCvPath) {
+
+        document.getElementById("cvName").textContent =
+            "CV actuel enregistré ✓";
+    }
+
 }
 
+
+
+// =====================================================
+// AFFICHER PHOTO
+// =====================================================
+
+function showProfileImage(path) {
+
+    const {
+        data
+    } = supabaseClient
+
+        .storage
+
+        .from(BUCKET)
+
+        .getPublicUrl(path);
+
+
+    const image =
+        document.getElementById("profilePreview");
+
+
+    image.src =
+        data.publicUrl +
+        "?v=" +
+        Date.now();
+
+
+    image.style.display =
+        "block";
+
+
+    document.getElementById("noPhoto")
+        .style.display =
+            "none";
+}
+
+
+
+// =====================================================
+// SÉLECTION PHOTO
+// =====================================================
+
+document
+    .getElementById("profileImage")
+    .addEventListener(
+        "change",
+        function() {
+
+            const file =
+                this.files[0];
+
+
+            if (!file) {
+                return;
+            }
+
+
+            document.getElementById("photoName")
+                .textContent =
+                    file.name;
+
+
+            const reader =
+                new FileReader();
+
+
+            reader.onload =
+                function(event) {
+
+                    const image =
+                        document.getElementById(
+                            "profilePreview"
+                        );
+
+
+                    image.src =
+                        event.target.result;
+
+
+                    image.style.display =
+                        "block";
+
+
+                    document.getElementById(
+                        "noPhoto"
+                    ).style.display =
+                        "none";
+                };
+
+
+            reader.readAsDataURL(file);
+
+        }
+    );
+
+
+
+// =====================================================
+// SÉLECTION CV
+// =====================================================
+
+document
+    .getElementById("cv")
+    .addEventListener(
+        "change",
+        function() {
+
+            const file =
+                this.files[0];
+
+
+            if (!file) {
+                return;
+            }
+
+
+            document.getElementById("cvName")
+                .textContent =
+                    file.name;
+
+        }
+    );
+
+
+
+// =====================================================
+// ENREGISTRER
+// =====================================================
 
 async function saveInfo() {
 
     const message =
         document.getElementById("message");
 
-    message.textContent = "Enregistrement...";
+
+    message.textContent =
+        "Enregistrement...";
+
+
     message.className = "";
 
+
+
+    // ---------------------------------------------
+    // INFORMATIONS
+    // ---------------------------------------------
 
     const name =
         document.getElementById("name").value;
 
+
+    const title =
+        document.getElementById("title").value;
+
+
     const phone =
         document.getElementById("phone").value;
+
 
     const email =
         document.getElementById("email").value;
 
+
     const address =
         document.getElementById("address").value;
+
 
     const description =
         document.getElementById("description").value;
 
 
+    const instagram =
+        document.getElementById("instagram").value;
+
+
+
+    // ---------------------------------------------
+    // PHOTO
+    // ---------------------------------------------
+
+    const imageFile =
+        document.getElementById(
+            "profileImage"
+        ).files[0];
+
+
+    let newProfileImagePath =
+        currentProfileImagePath;
+
+
+    if (imageFile) {
+
+        const extension =
+            imageFile.name
+                .split(".")
+                .pop()
+                .toLowerCase();
+
+
+        const fileName =
+            "profile/" +
+            Date.now() +
+            "-profile." +
+            extension;
+
+
+        const {
+            error: uploadError
+        } = await supabaseClient
+
+            .storage
+
+            .from(BUCKET)
+
+            .upload(
+                fileName,
+                imageFile,
+                {
+                    upsert: false,
+                    contentType: imageFile.type,
+                    cacheControl: "3600"
+                }
+            );
+
+
+        if (uploadError) {
+
+            showMessage(
+                "Erreur photo : " +
+                uploadError.message,
+                true
+            );
+
+            return;
+        }
+
+
+        newProfileImagePath =
+            fileName;
+    }
+
+
+
+    // ---------------------------------------------
+    // CV
+    // ---------------------------------------------
+
+    const cvFile =
+        document.getElementById("cv")
+            .files[0];
+
+
+    let newCvPath =
+        currentCvPath;
+
+
+    if (cvFile) {
+
+        if (
+            cvFile.type !==
+            "application/pdf"
+        ) {
+
+            showMessage(
+                "Le CV doit être un fichier PDF.",
+                true
+            );
+
+            return;
+        }
+
+
+        const fileName =
+            "cv/" +
+            Date.now() +
+            "-cv.pdf";
+
+
+        const {
+            error: uploadError
+        } = await supabaseClient
+
+            .storage
+
+            .from(BUCKET)
+
+            .upload(
+                fileName,
+                cvFile,
+                {
+                    upsert: false,
+                    contentType:
+                        "application/pdf",
+                    cacheControl: "3600"
+                }
+            );
+
+
+        if (uploadError) {
+
+            showMessage(
+                "Erreur CV : " +
+                uploadError.message,
+                true
+            );
+
+            return;
+        }
+
+
+        newCvPath =
+            fileName;
+    }
+
+
+
+    // ---------------------------------------------
+    // SAUVEGARDE SUPABASE
+    // ---------------------------------------------
+
     const {
         error
     } = await supabaseClient
+
         .from("site-content")
+
         .update({
+
             name: name,
+
+            title: title,
+
             phone: phone,
+
             email: email,
+
             address: address,
-            description: description
+
+            description: description,
+
+            instagram_url: instagram,
+
+            cv_path: newCvPath,
+
+            profile_image_path:
+                newProfileImagePath
+
         })
+
         .eq("id", 1);
+
 
 
     if (error) {
 
-        message.textContent =
-            "Erreur : " + error.message;
-
-        message.className =
-            "error";
+        showMessage(
+            "Erreur : " +
+            error.message,
+            true
+        );
 
         return;
     }
 
 
-    message.textContent =
-        "Informations enregistrées ✓";
 
-    message.className =
-        "success";
+    // ---------------------------------------------
+    // SUPPRIMER ANCIENNE PHOTO
+    // ---------------------------------------------
+
+    if (
+        imageFile &&
+        currentProfileImagePath &&
+        currentProfileImagePath !==
+            newProfileImagePath
+    ) {
+
+        await supabaseClient
+
+            .storage
+
+            .from(BUCKET)
+
+            .remove([
+                currentProfileImagePath
+            ]);
+    }
 
 
-    setTimeout(() => {
 
-        message.textContent = "";
+    // ---------------------------------------------
+    // SUPPRIMER ANCIEN CV
+    // ---------------------------------------------
 
-    }, 5000);
+    if (
+        cvFile &&
+        currentCvPath &&
+        currentCvPath !== newCvPath
+    ) {
+
+        await supabaseClient
+
+            .storage
+
+            .from(BUCKET)
+
+            .remove([
+                currentCvPath
+            ]);
+    }
+
+
+
+    // ---------------------------------------------
+    // METTRE À JOUR LES VARIABLES
+    // ---------------------------------------------
+
+    currentProfileImagePath =
+        newProfileImagePath;
+
+
+    currentCvPath =
+        newCvPath;
+
+
+
+    if (currentProfileImagePath) {
+
+        showProfileImage(
+            currentProfileImagePath
+        );
+    }
+
+
+
+    showMessage(
+        "Informations enregistrées ✓",
+        false
+    );
+
 }
 
+
+
+// =====================================================
+// MESSAGE
+// =====================================================
+
+function showMessage(
+    text,
+    isError
+) {
+
+    const message =
+        document.getElementById("message");
+
+
+    message.textContent =
+        text;
+
+
+    message.className =
+        isError
+            ? "error"
+            : "success";
+
+
+    setTimeout(
+        () => {
+            message.textContent = "";
+        },
+        5000
+    );
+}
+
+
+
+// =====================================================
+// INITIALISATION
+// =====================================================
 
 async function init() {
 
     const loggedIn =
         await checkSession();
 
+
     if (!loggedIn) {
         return;
     }
+
 
     await loadInfo();
 }
