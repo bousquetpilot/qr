@@ -1,1 +1,17 @@
-
+<!doctype html><html lang="fr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Customize</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#f2f2f2;font-family:Arial;display:flex;justify-content:center;align-items:center;padding:20px}
+.card{width:100%;max-width:430px;background:white;padding:30px;border-radius:22px;box-shadow:0 10px 30px #0001}
+h1{text-align:center;margin:0 0 25px}button{width:100%;padding:16px;margin-top:12px;border:0;border-radius:12px;font-size:16px;cursor:pointer}
+.custom{background:#5b4bdb;color:white}.back{background:#777;color:white}
+</style></head><body><div class="card"><h1>Customize</h1>
+<button class="custom" onclick="location.href='image/'">🖼️ IMAGE LIBRARY</button>
+<button class="custom" onclick="alert('Personal Info : prochaine étape')">👤 PERSONAL INFO</button>
+<button class="custom" onclick="alert('Link Library : prochaine étape')">🔗 LINK LIBRARY</button>
+<button class="back" onclick="location.href='../control/'">← RETOUR</button></div>
+<script>
+const sb=window.supabase.createClient("https://frdmtstprhyrcozuzkcf.supabase.co","sb_publishable_YkzwqM3E18r1W0ztmJjXug_qJO2htuo");
+(async()=>{const {data}=await sb.auth.getSession();if(!data.session)location.href="../control/"})();
+</script></body></html>
