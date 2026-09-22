@@ -5,10 +5,7 @@
 
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Romain Bousquet</title>
 
@@ -61,21 +58,15 @@
             width: 100%;
             padding: 16px;
             margin: 12px 0;
-
             background: white;
             color: #111;
-
             text-decoration: none;
-
             border-radius: 12px;
-
             text-align: center;
-
             font-size: 17px;
-
             box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-
             transition: 0.2s;
+            cursor: pointer;
         }
 
         .button:hover {
@@ -102,12 +93,10 @@
 
 </head>
 
-
 <body>
 
 
 <div class="container">
-
 
     <div id="loading">
         Chargement...
@@ -116,10 +105,6 @@
 
     <div id="content">
 
-
-        <!-- =========================
-             PROFIL
-             ========================= -->
 
         <div class="profile">
 
@@ -143,43 +128,25 @@
         </div>
 
 
-
-        <!-- =========================
-             TÉLÉPHONE
-             ========================= -->
-
         <a
             id="phoneButton"
             class="button"
-            href="#"
         >
             📞 Téléphone
         </a>
 
 
-
-        <!-- =========================
-             EMAIL
-             ========================= -->
-
         <a
             id="emailButton"
             class="button"
-            href="#"
         >
             ✉️ Email
         </a>
 
 
-
-        <!-- =========================
-             INSTAGRAM
-             ========================= -->
-
         <a
             id="instagramButton"
             class="button"
-            href="#"
             target="_blank"
             rel="noopener noreferrer"
         >
@@ -187,15 +154,9 @@
         </a>
 
 
-
-        <!-- =========================
-             CV
-             ========================= -->
-
         <a
             id="cvButton"
             class="button"
-            href="#"
             target="_blank"
             rel="noopener noreferrer"
         >
@@ -203,25 +164,17 @@
         </a>
 
 
-
         <div class="footer">
             QR Digital Card
         </div>
 
-
     </div>
-
 
 </div>
 
 
-
 <script>
 
-
-// =====================================================
-// SUPABASE
-// =====================================================
 
 const SUPABASE_URL =
     "https://frdmtstprhyrcozuzkcf.supabase.co";
@@ -238,14 +191,9 @@ const supabaseClient =
     );
 
 
-const BUCKET =
-    "qr-images";
+const BUCKET = "qr-images";
 
 
-
-// =====================================================
-// CHARGEMENT
-// =====================================================
 
 async function loadSite() {
 
@@ -257,64 +205,45 @@ async function loadSite() {
 
         .from("site-content")
 
-        .select(`
-            name,
-            title,
-            phone,
-            email,
-            instagram_url,
-            cv_path,
-            profile_image_path
-        `)
+        .select("*")
 
         .eq("id", 1)
 
         .single();
 
 
-
-    // =================================================
-    // ERREUR
-    // =================================================
-
     if (error) {
 
-        console.error(
-            "Erreur Supabase :",
-            error
-        );
+        console.error(error);
 
         document.getElementById(
             "loading"
         ).textContent =
-            "Impossible de charger la page.";
+            "Erreur de chargement.";
 
         return;
     }
 
 
+    console.log("DONNÉES SUPABASE :", data);
 
-    // =================================================
+
+
     // NOM
-    // =================================================
 
     document.getElementById(
         "name"
     ).textContent =
-        data.name ||
-        "Romain Bousquet";
+        data.name || "Romain Bousquet";
 
 
 
-    // =================================================
     // TITRE
-    // =================================================
 
     document.getElementById(
         "title"
     ).textContent =
-        data.title ||
-        "";
+        data.title || "Pilot ✈️";
 
 
 
@@ -322,7 +251,7 @@ async function loadSite() {
     // TÉLÉPHONE
     // =================================================
 
-    const phoneButton =
+    const phone =
         document.getElementById(
             "phoneButton"
         );
@@ -330,21 +259,9 @@ async function loadSite() {
 
     if (data.phone) {
 
-        phoneButton.href =
+        phone.href =
             "tel:" +
             data.phone;
-
-    } else {
-
-        phoneButton.href =
-            "#";
-
-        phoneButton.onclick =
-            function(event) {
-
-                event.preventDefault();
-
-            };
 
     }
 
@@ -354,7 +271,7 @@ async function loadSite() {
     // EMAIL
     // =================================================
 
-    const emailButton =
+    const email =
         document.getElementById(
             "emailButton"
         );
@@ -362,21 +279,13 @@ async function loadSite() {
 
     if (data.email) {
 
-        emailButton.href =
+        email.href =
             "mailto:" +
             data.email;
 
     } else {
 
-        emailButton.href =
-            "#";
-
-        emailButton.onclick =
-            function(event) {
-
-                event.preventDefault();
-
-            };
+        email.href = "#";
 
     }
 
@@ -386,7 +295,7 @@ async function loadSite() {
     // INSTAGRAM
     // =================================================
 
-    const instagramButton =
+    const instagram =
         document.getElementById(
             "instagramButton"
         );
@@ -394,20 +303,28 @@ async function loadSite() {
 
     if (data.instagram_url) {
 
-        instagramButton.href =
-            data.instagram_url;
+        let instagramURL =
+            data.instagram_url.trim();
+
+
+        if (
+            !instagramURL.startsWith("http://") &&
+            !instagramURL.startsWith("https://")
+        ) {
+
+            instagramURL =
+                "https://" +
+                instagramURL;
+
+        }
+
+
+        instagram.href =
+            instagramURL;
 
     } else {
 
-        instagramButton.href =
-            "#";
-
-        instagramButton.onclick =
-            function(event) {
-
-                event.preventDefault();
-
-            };
+        instagram.href = "#";
 
     }
 
@@ -417,7 +334,7 @@ async function loadSite() {
     // CV
     // =================================================
 
-    const cvButton =
+    const cv =
         document.getElementById(
             "cvButton"
         );
@@ -426,34 +343,25 @@ async function loadSite() {
     if (data.cv_path) {
 
         const {
-            data: publicData
-        } = supabaseClient
+            data: publicURL
+        } =
+            supabaseClient
 
-            .storage
+                .storage
 
-            .from(BUCKET)
+                .from(BUCKET)
 
-            .getPublicUrl(
-                data.cv_path
-            );
+                .getPublicUrl(
+                    data.cv_path
+                );
 
 
-        cvButton.href =
-            publicData.publicUrl +
-            "?v=" +
-            Date.now();
+        cv.href =
+            publicURL.publicUrl;
 
     } else {
 
-        cvButton.href =
-            "#";
-
-        cvButton.onclick =
-            function(event) {
-
-                event.preventDefault();
-
-            };
+        cv.href = "#";
 
     }
 
@@ -463,7 +371,7 @@ async function loadSite() {
     // PHOTO
     // =================================================
 
-    const profileImage =
+    const image =
         document.getElementById(
             "profileImage"
         );
@@ -472,30 +380,27 @@ async function loadSite() {
     if (data.profile_image_path) {
 
         const {
-            data: publicData
-        } = supabaseClient
+            data: publicURL
+        } =
+            supabaseClient
 
-            .storage
+                .storage
 
-            .from(BUCKET)
+                .from(BUCKET)
 
-            .getPublicUrl(
-                data.profile_image_path
-            );
+                .getPublicUrl(
+                    data.profile_image_path
+                );
 
 
-        profileImage.src =
-            publicData.publicUrl +
+        image.src =
+            publicURL.publicUrl +
             "?v=" +
             Date.now();
 
     }
 
 
-
-    // =================================================
-    // AFFICHER
-    // =================================================
 
     document.getElementById(
         "loading"
@@ -510,11 +415,6 @@ async function loadSite() {
 
 }
 
-
-
-// =====================================================
-// LANCEMENT
-// =====================================================
 
 loadSite();
 
