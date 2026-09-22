@@ -5,9 +5,14 @@
 
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Romain Bousquet</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
 
@@ -84,52 +89,437 @@
             font-size: 13px;
         }
 
+        #loading {
+            text-align: center;
+            color: #777;
+        }
+
+        #content {
+            display: none;
+        }
+
     </style>
 
 </head>
 
+
 <body>
+
 
 <div class="container">
 
-    <div class="profile">
 
-        <img src="photo.jpg" alt="Photo">
+    <div id="loading">
+        Chargement...
+    </div>
 
-        <h1>Romain Bousquet</h1>
 
-        <div class="description">
-            Pilot ✈️
+    <div id="content">
+
+
+        <!-- =========================
+             PROFIL
+             ========================= -->
+
+        <div class="profile">
+
+            <img
+                id="profileImage"
+                src="photo.jpg"
+                alt="Photo"
+            >
+
+            <h1 id="name">
+                Romain Bousquet
+            </h1>
+
+            <div
+                id="title"
+                class="description"
+            >
+                Pilot ✈️
+            </div>
+
         </div>
 
+
+
+        <!-- =========================
+             TÉLÉPHONE
+             ========================= -->
+
+        <a
+            id="phoneButton"
+            class="button"
+            href="#"
+        >
+            📞 Téléphone
+        </a>
+
+
+
+        <!-- =========================
+             EMAIL
+             ========================= -->
+
+        <a
+            id="emailButton"
+            class="button"
+            href="#"
+        >
+            ✉️ Email
+        </a>
+
+
+
+        <!-- =========================
+             INSTAGRAM
+             ========================= -->
+
+        <a
+            id="instagramButton"
+            class="button"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+        >
+            📷 Instagram
+        </a>
+
+
+
+        <!-- =========================
+             CV
+             ========================= -->
+
+        <a
+            id="cvButton"
+            class="button"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+        >
+            📄 Mon CV
+        </a>
+
+
+
+        <div class="footer">
+            QR Digital Card
+        </div>
+
+
     </div>
 
-
-    <a class="button" href="tel:+33000000000">
-        📞 Téléphone
-    </a>
-
-
-    <a class="button" href="mailto:tonemail@example.com">
-        ✉️ Email
-    </a>
-
-
-    <a class="button" href="https://www.instagram.com/" target="_blank">
-        📷 Instagram
-    </a>
-
-
-    <a class="button" href="#" target="_blank">
-        📄 Mon CV
-    </a>
-
-
-    <div class="footer">
-        QR Digital Card
-    </div>
 
 </div>
+
+
+
+<script>
+
+
+// =====================================================
+// SUPABASE
+// =====================================================
+
+const SUPABASE_URL =
+    "https://frdmtstprhyrcozuzkcf.supabase.co";
+
+
+const SUPABASE_KEY =
+    "sb_publishable_YkzwqM3E18r1W0ztmJjXug_qJO2htuo";
+
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+
+const BUCKET =
+    "qr-images";
+
+
+
+// =====================================================
+// CHARGEMENT
+// =====================================================
+
+async function loadSite() {
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+
+        .from("site-content")
+
+        .select(`
+            name,
+            title,
+            phone,
+            email,
+            instagram_url,
+            cv_path,
+            profile_image_path
+        `)
+
+        .eq("id", 1)
+
+        .single();
+
+
+
+    // =================================================
+    // ERREUR
+    // =================================================
+
+    if (error) {
+
+        console.error(
+            "Erreur Supabase :",
+            error
+        );
+
+        document.getElementById(
+            "loading"
+        ).textContent =
+            "Impossible de charger la page.";
+
+        return;
+    }
+
+
+
+    // =================================================
+    // NOM
+    // =================================================
+
+    document.getElementById(
+        "name"
+    ).textContent =
+        data.name ||
+        "Romain Bousquet";
+
+
+
+    // =================================================
+    // TITRE
+    // =================================================
+
+    document.getElementById(
+        "title"
+    ).textContent =
+        data.title ||
+        "";
+
+
+
+    // =================================================
+    // TÉLÉPHONE
+    // =================================================
+
+    const phoneButton =
+        document.getElementById(
+            "phoneButton"
+        );
+
+
+    if (data.phone) {
+
+        phoneButton.href =
+            "tel:" +
+            data.phone;
+
+    } else {
+
+        phoneButton.href =
+            "#";
+
+        phoneButton.onclick =
+            function(event) {
+
+                event.preventDefault();
+
+            };
+
+    }
+
+
+
+    // =================================================
+    // EMAIL
+    // =================================================
+
+    const emailButton =
+        document.getElementById(
+            "emailButton"
+        );
+
+
+    if (data.email) {
+
+        emailButton.href =
+            "mailto:" +
+            data.email;
+
+    } else {
+
+        emailButton.href =
+            "#";
+
+        emailButton.onclick =
+            function(event) {
+
+                event.preventDefault();
+
+            };
+
+    }
+
+
+
+    // =================================================
+    // INSTAGRAM
+    // =================================================
+
+    const instagramButton =
+        document.getElementById(
+            "instagramButton"
+        );
+
+
+    if (data.instagram_url) {
+
+        instagramButton.href =
+            data.instagram_url;
+
+    } else {
+
+        instagramButton.href =
+            "#";
+
+        instagramButton.onclick =
+            function(event) {
+
+                event.preventDefault();
+
+            };
+
+    }
+
+
+
+    // =================================================
+    // CV
+    // =================================================
+
+    const cvButton =
+        document.getElementById(
+            "cvButton"
+        );
+
+
+    if (data.cv_path) {
+
+        const {
+            data: publicData
+        } = supabaseClient
+
+            .storage
+
+            .from(BUCKET)
+
+            .getPublicUrl(
+                data.cv_path
+            );
+
+
+        cvButton.href =
+            publicData.publicUrl +
+            "?v=" +
+            Date.now();
+
+    } else {
+
+        cvButton.href =
+            "#";
+
+        cvButton.onclick =
+            function(event) {
+
+                event.preventDefault();
+
+            };
+
+    }
+
+
+
+    // =================================================
+    // PHOTO
+    // =================================================
+
+    const profileImage =
+        document.getElementById(
+            "profileImage"
+        );
+
+
+    if (data.profile_image_path) {
+
+        const {
+            data: publicData
+        } = supabaseClient
+
+            .storage
+
+            .from(BUCKET)
+
+            .getPublicUrl(
+                data.profile_image_path
+            );
+
+
+        profileImage.src =
+            publicData.publicUrl +
+            "?v=" +
+            Date.now();
+
+    }
+
+
+
+    // =================================================
+    // AFFICHER
+    // =================================================
+
+    document.getElementById(
+        "loading"
+    ).style.display =
+        "none";
+
+
+    document.getElementById(
+        "content"
+    ).style.display =
+        "block";
+
+}
+
+
+
+// =====================================================
+// LANCEMENT
+// =====================================================
+
+loadSite();
+
+</script>
+
 
 </body>
 
