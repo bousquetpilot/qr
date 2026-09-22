@@ -5,14 +5,9 @@
 
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Romain Bousquet</title>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
 
@@ -89,397 +84,52 @@
             font-size: 13px;
         }
 
-        #loading {
-            text-align: center;
-            color: #999;
-            margin-top: 50px;
-        }
-
     </style>
 
 </head>
 
-
 <body>
 
-
-<div id="loading">
-    Chargement...
-</div>
-
-
-<div
-    class="container"
-    id="content"
-    style="display:none;"
->
-
+<div class="container">
 
     <div class="profile">
 
+        <img src="photo.jpg" alt="Photo">
 
-        <img
-            id="profileImage"
-            src="photo.jpg"
-            alt="Photo"
-        >
+        <h1>Romain Bousquet</h1>
 
-
-        <h1 id="name">
-            Romain Bousquet
-        </h1>
-
-
-        <div
-            class="description"
-            id="title"
-        >
+        <div class="description">
             Pilot ✈️
         </div>
-
 
     </div>
 
 
-
-    <!-- =========================
-         TÉLÉPHONE
-         ========================= -->
-
-    <a
-        class="button"
-        id="phoneButton"
-        href="#"
-    >
+    <a class="button" href="tel:+33000000000">
         📞 Téléphone
     </a>
 
 
-
-    <!-- =========================
-         EMAIL
-         ========================= -->
-
-    <a
-        class="button"
-        id="emailButton"
-        href="#"
-    >
+    <a class="button" href="mailto:tonemail@example.com">
         ✉️ Email
     </a>
 
 
-
-    <!-- =========================
-         INSTAGRAM
-         ========================= -->
-
-    <a
-        class="button"
-        id="instagramButton"
-        href="#"
-        target="_blank"
-        rel="noopener noreferrer"
-    >
+    <a class="button" href="https://www.instagram.com/" target="_blank">
         📷 Instagram
     </a>
 
 
-
-    <!-- =========================
-         CV
-         ========================= -->
-
-    <a
-        class="button"
-        id="cvButton"
-        href="#"
-        target="_blank"
-        rel="noopener noreferrer"
-    >
+    <a class="button" href="#" target="_blank">
         📄 Mon CV
     </a>
-
 
 
     <div class="footer">
         QR Digital Card
     </div>
 
-
 </div>
-
-
-
-<script>
-
-
-// =====================================================
-// SUPABASE
-// =====================================================
-
-const SUPABASE_URL =
-    "https://frdmtstprhyrcozuzkcf.supabase.co";
-
-
-const SUPABASE_KEY =
-    "sb_publishable_YkzwqM3E18r1W0ztmJjXug_qJO2htuo";
-
-
-const supabaseClient =
-    window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
-    );
-
-
-const BUCKET = "qr-images";
-
-
-
-// =====================================================
-// CHARGER LES INFORMATIONS
-// =====================================================
-
-async function loadSite() {
-
-
-    const {
-        data,
-        error
-    } = await supabaseClient
-
-        .from("site-content")
-
-        .select(`
-            name,
-            title,
-            phone,
-            email,
-            instagram_url,
-            cv_path,
-            profile_image_path
-        `)
-
-        .eq("id", 1)
-
-        .single();
-
-
-
-    // =================================================
-    // ERREUR
-    // =================================================
-
-    if (error) {
-
-        console.error(
-            "Erreur Supabase :",
-            error
-        );
-
-        document.getElementById("loading")
-            .textContent =
-                "Impossible de charger les informations.";
-
-        return;
-    }
-
-
-
-    // =================================================
-    // NOM
-    // =================================================
-
-    if (data.name) {
-
-        document.getElementById("name")
-            .textContent =
-                data.name;
-    }
-
-
-
-    // =================================================
-    // TITRE
-    // =================================================
-
-    if (data.title) {
-
-        document.getElementById("title")
-            .textContent =
-                data.title;
-    }
-
-
-
-    // =================================================
-    // TÉLÉPHONE
-    // =================================================
-
-    const phoneButton =
-        document.getElementById(
-            "phoneButton"
-        );
-
-
-    if (data.phone) {
-
-        phoneButton.href =
-            "tel:" + data.phone;
-
-    } else {
-
-        phoneButton.style.display =
-            "none";
-    }
-
-
-
-    // =================================================
-    // EMAIL
-    // =================================================
-
-    const emailButton =
-        document.getElementById(
-            "emailButton"
-        );
-
-
-    if (data.email) {
-
-        emailButton.href =
-            "mailto:" + data.email;
-
-    } else {
-
-        emailButton.style.display =
-            "none";
-    }
-
-
-
-    // =================================================
-    // INSTAGRAM
-    // =================================================
-
-    const instagramButton =
-        document.getElementById(
-            "instagramButton"
-        );
-
-
-    if (data.instagram_url) {
-
-        instagramButton.href =
-            data.instagram_url;
-
-    } else {
-
-        instagramButton.style.display =
-            "none";
-    }
-
-
-
-    // =================================================
-    // PHOTO DE PROFIL
-    // =================================================
-
-    const profileImage =
-        document.getElementById(
-            "profileImage"
-        );
-
-
-    if (data.profile_image_path) {
-
-        const {
-            data: publicData
-        } = supabaseClient
-
-            .storage
-
-            .from(BUCKET)
-
-            .getPublicUrl(
-                data.profile_image_path
-            );
-
-
-        profileImage.src =
-            publicData.publicUrl +
-            "?v=" +
-            Date.now();
-
-    }
-
-
-
-    // =================================================
-    // CV
-    // =================================================
-
-    const cvButton =
-        document.getElementById(
-            "cvButton"
-        );
-
-
-    if (data.cv_path) {
-
-        const {
-            data: publicData
-        } = supabaseClient
-
-            .storage
-
-            .from(BUCKET)
-
-            .getPublicUrl(
-                data.cv_path
-            );
-
-
-        cvButton.href =
-            publicData.publicUrl +
-            "?v=" +
-            Date.now();
-
-    } else {
-
-        cvButton.style.display =
-            "none";
-    }
-
-
-
-    // =================================================
-    // AFFICHER LE SITE
-    // =================================================
-
-    document.getElementById("loading")
-        .style.display =
-            "none";
-
-
-    document.getElementById("content")
-        .style.display =
-            "block";
-
-}
-
-
-
-// =====================================================
-// LANCEMENT
-// =====================================================
-
-loadSite();
-
-
-</script>
-
 
 </body>
 
