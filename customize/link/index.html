@@ -191,14 +191,12 @@
     <h1>🔗 Link Library</h1>
 
     <div class="subtitle">
-        Gère le lien affiché par ton QR
+        Gère les liens disponibles pour ton QR
     </div>
 
 
 
-    <!-- =================================================
-         AJOUTER UN LIEN
-         ================================================= -->
+    <!-- AJOUT -->
 
     <div class="section">
 
@@ -240,9 +238,7 @@
 
 
 
-    <!-- =================================================
-         BIBLIOTHÈQUE
-         ================================================= -->
+    <!-- BIBLIOTHÈQUE -->
 
     <div class="section">
 
@@ -297,20 +293,7 @@ const supabaseClient =
 
 
 // =====================================================
-// STOCKAGE LOCAL DES LIENS
-// =====================================================
-//
-// Pour l'instant la bibliothèque est stockée
-// directement dans le navigateur.
-// Le lien actuellement utilisé est lui stocké
-// dans Supabase.
-// =====================================================
-
-let links = [];
-
-
-// =====================================================
-// VÉRIFICATION SESSION
+// SESSION
 // =====================================================
 
 async function checkSession() {
@@ -331,6 +314,15 @@ async function checkSession() {
     return true;
 }
 
+
+
+// =====================================================
+// LIEN ACTUEL
+// =====================================================
+
+let currentLink = "";
+
+let currentLinkName = "";
 
 
 // =====================================================
@@ -357,17 +349,20 @@ async function loadCurrentLink() {
 
     if (error) {
 
-        console.error(error);
+        console.error(
+            "Erreur lien actuel :",
+            error
+        );
 
         return;
     }
 
 
-    window.currentLink =
+    currentLink =
         data.link_url || "";
 
 
-    window.currentLinkName =
+    currentLinkName =
         data.link_name || "";
 
 }
@@ -378,46 +373,42 @@ async function loadCurrentLink() {
 // CHARGER LA BIBLIOTHÈQUE
 // =====================================================
 
-function loadLibrary() {
+async function loadLinks() {
 
-    const saved =
-        localStorage.getItem(
-            "qr-link-library"
+    const {
+        data,
+        error
+    } = await supabaseClient
+
+        .from("link-library")
+
+        .select(
+            "id, name, url, created_at"
+        )
+
+        .order(
+            "created_at",
+            {
+                ascending: false
+            }
         );
 
 
-    if (saved) {
+    if (error) {
 
-        try {
+        document.getElementById(
+            "linksList"
+        ).innerHTML =
+            '<div class="empty">Erreur de chargement.</div>';
 
-            links =
-                JSON.parse(saved);
 
-        } catch {
+        console.error(error);
 
-            links = [];
-
-        }
-
+        return;
     }
 
 
-    renderLinks();
-
-}
-
-
-
-// =====================================================
-// SAUVEGARDER LA BIBLIOTHÈQUE
-// =====================================================
-
-function saveLibrary() {
-
-    localStorage.setItem(
-        "qr-link-library",
-        JSON.stringify(links)
-    );
+    renderLinks(data || []);
 
 }
 
@@ -427,7 +418,7 @@ function saveLibrary() {
 // AFFICHER LES LIENS
 // =====================================================
 
-function renderLinks() {
+function renderLinks(links) {
 
     const container =
         document.getElementById(
@@ -447,8 +438,9 @@ function renderLinks() {
     }
 
 
+
     links.forEach(
-        function(link, index) {
+        function(link) {
 
 
             const card =
@@ -461,16 +453,18 @@ function renderLinks() {
                 "link-card";
 
 
-            if (
-                link.url ===
-                window.currentLink
-            ) {
+            const isActive =
+                link.url === currentLink;
+
+
+            if (isActive) {
 
                 card.classList.add(
                     "active"
                 );
 
             }
+
 
 
             const name =
@@ -487,6 +481,7 @@ function renderLinks() {
                 link.name;
 
 
+
             const url =
                 document.createElement(
                     "div"
@@ -501,16 +496,14 @@ function renderLinks() {
                 link.url;
 
 
+
             card.appendChild(name);
 
             card.appendChild(url);
 
 
 
-            if (
-                link.url ===
-                window.currentLink
-            ) {
+            if (isActive) {
 
                 const badge =
                     document.createElement(
@@ -562,30 +555,7 @@ function renderLinks() {
             useButton.onclick =
                 function() {
 
-                    useLink(index);
-
-                };
-
-
-
-            const deleteButton =
-                document.createElement(
-                    "button"
-                );
-
-
-            deleteButton.className =
-                "delete";
-
-
-            deleteButton.textContent =
-                "SUPPRIMER";
-
-
-            deleteButton.onclick =
-                function() {
-
-                    deleteLink(index);
+                    useLink(link);
 
                 };
 
@@ -596,9 +566,40 @@ function renderLinks() {
             );
 
 
-            buttons.appendChild(
-                deleteButton
-            );
+
+            // On ne permet pas de supprimer
+            // le lien actuellement actif.
+
+            if (!isActive) {
+
+                const deleteButton =
+                    document.createElement(
+                        "button"
+                    );
+
+
+                deleteButton.className =
+                    "delete";
+
+
+                deleteButton.textContent =
+                    "SUPPRIMER";
+
+
+                deleteButton.onclick =
+                    function() {
+
+                        deleteLink(link);
+
+                    };
+
+
+                buttons.appendChild(
+                    deleteButton
+                );
+
+            }
+
 
 
             card.appendChild(
@@ -618,10 +619,10 @@ function renderLinks() {
 
 
 // =====================================================
-// AJOUTER
+// AJOUTER UN LIEN
 // =====================================================
 
-function addLink() {
+async function addLink() {
 
 
     let name =
@@ -634,6 +635,7 @@ function addLink() {
         document.getElementById(
             "linkUrl"
         ).value.trim();
+
 
 
     if (!name) {
@@ -659,6 +661,8 @@ function addLink() {
 
 
 
+    // Ajouter https automatiquement
+
     if (
         !url.startsWith("http://") &&
         !url.startsWith("https://")
@@ -672,16 +676,33 @@ function addLink() {
 
 
 
-    links.push({
+    const {
+        error
+    } = await supabaseClient
 
-        name: name,
+        .from("link-library")
 
-        url: url
+        .insert({
 
-    });
+            name: name,
+
+            url: url
+
+        });
 
 
-    saveLibrary();
+
+    if (error) {
+
+        showMessage(
+            "Erreur : " +
+            error.message,
+            true
+        );
+
+        return;
+    }
+
 
 
     document.getElementById(
@@ -694,7 +715,7 @@ function addLink() {
     ).value = "";
 
 
-    renderLinks();
+    await loadLinks();
 
 
     showMessage(
@@ -710,11 +731,7 @@ function addLink() {
 // UTILISER UN LIEN
 // =====================================================
 
-async function useLink(index) {
-
-
-    const link =
-        links[index];
+async function useLink(link) {
 
 
     const {
@@ -750,15 +767,15 @@ async function useLink(index) {
 
 
 
-    window.currentLink =
+    currentLink =
         link.url;
 
 
-    window.currentLinkName =
+    currentLinkName =
         link.name;
 
 
-    renderLinks();
+    await loadLinks();
 
 
     showMessage(
@@ -774,16 +791,11 @@ async function useLink(index) {
 // SUPPRIMER
 // =====================================================
 
-async function deleteLink(index) {
-
-
-    const link =
-        links[index];
+async function deleteLink(link) {
 
 
     if (
-        link.url ===
-        window.currentLink
+        link.url === currentLink
     ) {
 
         alert(
@@ -792,6 +804,7 @@ async function deleteLink(index) {
 
         return;
     }
+
 
 
     if (
@@ -806,16 +819,36 @@ async function deleteLink(index) {
     }
 
 
-    links.splice(
-        index,
-        1
-    );
+
+    const {
+        error
+    } = await supabaseClient
+
+        .from("link-library")
+
+        .delete()
+
+        .eq(
+            "id",
+            link.id
+        );
 
 
-    saveLibrary();
+
+    if (error) {
+
+        showMessage(
+            "Erreur : " +
+            error.message,
+            true
+        );
+
+        return;
+    }
 
 
-    renderLinks();
+
+    await loadLinks();
 
 
     showMessage(
@@ -876,6 +909,7 @@ async function init() {
 
 
     if (!loggedIn) {
+
         return;
     }
 
@@ -883,7 +917,7 @@ async function init() {
     await loadCurrentLink();
 
 
-    loadLibrary();
+    await loadLinks();
 
 }
 
