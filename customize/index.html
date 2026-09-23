@@ -17,7 +17,15 @@ h1{text-align:center;margin:0 0 25px}button{width:100%;padding:16px;margin-top:1
 >
     👤 PERSONAL INFO
 </button>
-<button class="custom" onclick="alert('Link Library : prochaine étape')">🔗 LINK LIBRARY</button>
+<button
+    onclick="location.href='link/'"
+    style="
+        background:#5b4bdb;
+        color:white;
+    "
+>
+    🔗 LINK LIBRARY
+</button>
 <button class="back" onclick="location.href='../control/'">← RETOUR</button></div>
 <script>
 const sb=window.supabase.createClient("https://frdmtstprhyrcozuzkcf.supabase.co","sb_publishable_YkzwqM3E18r1W0ztmJjXug_qJO2htuo");
