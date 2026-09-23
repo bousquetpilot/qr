@@ -1,250 +1,1384 @@
 <!doctype html>
 <html lang="fr">
+
 <head>
+
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+>
+
 <title>Image Library</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#f2f2f2;font-family:Arial,sans-serif;padding:20px;color:#111}
-.wrap{max-width:760px;margin:auto}
-.card{background:#fff;padding:24px;border-radius:22px;box-shadow:0 10px 30px rgba(0,0,0,.10)}
-h1{text-align:center;margin:0 0 8px}
-.sub{text-align:center;color:#666;margin-bottom:22px}
-.preview{border:2px solid #ddd;border-radius:18px;padding:12px;background:#fafafa;text-align:center;margin-bottom:20px}
-.preview img{width:100%;max-height:390px;object-fit:contain;border-radius:12px;background:#eee;display:block}
-.preview-title{font-weight:bold;margin:12px 0 5px}
-.preview-state{font-size:14px;color:#666;margin-bottom:12px}
-.use{background:#5b4bdb;color:#fff;border:0;border-radius:12px;padding:14px 18px;font-size:15px;cursor:pointer;width:100%}
-.use:disabled{opacity:.5;cursor:default}
-.actions{display:flex;gap:10px;margin-bottom:18px}
-.add{flex:1;background:#5b4bdb;color:#fff;border-radius:12px;padding:15px;text-align:center;cursor:pointer;font-size:15px}
-#file{display:none}
-.back{background:#777;color:#fff;border:0;border-radius:12px;padding:15px 18px;font-size:15px;cursor:pointer}
-#status{text-align:center;min-height:22px;color:#555;margin:10px 0 18px}
-.section-title{font-size:18px;font-weight:bold;margin:5px 0 12px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:14px}
-.item{position:relative;border:2px solid #ddd;border-radius:16px;padding:8px;background:#fafafa;cursor:pointer;transition:.15s}
-.item:hover{transform:translateY(-1px)}
-.item.selected{border-color:#777}
-.item.active{border-color:#5b4bdb;box-shadow:0 0 0 2px rgba(91,75,219,.15)}
-.thumb{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;background:#eee;display:block}
-.name{font-size:12px;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.badge{position:absolute;left:14px;top:14px;background:#5b4bdb;color:#fff;border-radius:7px;padding:5px 7px;font-size:10px;font-weight:bold}
-.delete{position:absolute;right:12px;top:12px;width:34px;height:34px;border:0;border-radius:50%;padding:0;background:#111;color:#fff;font-size:19px;cursor:pointer}
-.empty{grid-column:1/-1;text-align:center;padding:40px 10px;color:#777;border:2px dashed #ddd;border-radius:16px}
-@media(max-width:500px){body{padding:12px}.card{padding:18px}.actions{flex-direction:column}.back{width:100%}}
-</style>
-</head>
-<body>
-<div class="wrap">
-<div class="card">
-<h1>Image Library</h1>
-<div class="sub">Choisis une image pour la prévisualiser, puis valide avec « Utiliser cette image ».</div>
 
-<div id="preview" class="preview" style="display:none">
-<img id="previewImg" alt="Prévisualisation">
-<div id="previewTitle" class="preview-title"></div>
-<div id="previewState" class="preview-state"></div>
-<button id="useBtn" class="use">UTILISER CETTE IMAGE</button>
-</div>
-
-<div class="actions">
-<label class="add">＋ AJOUTER UNE IMAGE<input id="file" type="file" accept="image/*"></label>
-<button class="back" onclick="location.href='../'">← RETOUR</button>
-</div>
-
-<div id="status"></div>
-<div class="section-title">MES IMAGES</div>
-<div id="grid" class="grid"></div>
-</div>
-</div>
-
-<script>
-const sb=window.supabase.createClient("https://frdmtstprhyrcozuzkcf.supabase.co","sb_publishable_YkzwqM3E18r1W0ztmJjXug_qJO2htuo");
-const bucket="qr-images";
-let currentPath=null;
-let selectedPath=null;
-
-const grid=document.getElementById("grid");
-const status=document.getElementById("status");
-const file=document.getElementById("file");
-const preview=document.getElementById("preview");
-const previewImg=document.getElementById("previewImg");
-const previewTitle=document.getElementById("previewTitle");
-const previewState=document.getElementById("previewState");
-const useBtn=document.getElementById("useBtn");
-
-function publicUrl(path){
-  return sb.storage.from(bucket).getPublicUrl(path).data.publicUrl;
+*{
+    box-sizing:border-box
 }
 
-function setStatus(text){ status.textContent=text; }
-
-async function requireSession(){
-  const {data}=await sb.auth.getSession();
-  if(!data.session){ location.href="../../control/"; return false; }
-  return true;
+body{
+    margin:0;
+    background:#f2f2f2;
+    font-family:Arial,sans-serif;
+    padding:20px;
+    color:#111
 }
 
-async function loadCurrent(){
-  const {data,error}=await sb.from("qr-control")
-    .select("image_path").eq("id",1).single();
-  if(error) throw error;
-  currentPath=data.image_path;
+.wrap{
+    max-width:760px;
+    margin:auto
 }
 
-function showPreview(path){
-  selectedPath=path;
-  preview.style.display="block";
-  previewImg.src=publicUrl(path);
-  previewTitle.textContent=path;
-  const active=path===currentPath;
-  previewState.textContent=active ? "✓ Cette image est actuellement utilisée par le QR." : "Cette image n'est pas encore active.";
-  useBtn.disabled=active;
-  useBtn.textContent=active ? "IMAGE ACTUELLE ✓" : "UTILISER CETTE IMAGE";
-
-  document.querySelectorAll(".item").forEach(el=>el.classList.remove("selected"));
-  const el=document.querySelector(`[data-path="${CSS.escape(path)}"]`);
-  if(el) el.classList.add("selected");
+.card{
+    background:#fff;
+    padding:24px;
+    border-radius:22px;
+    box-shadow:0 10px 30px rgba(0,0,0,.10)
 }
 
-async function loadImages(){
-  setStatus("Chargement...");
-  const {data,error}=await sb.storage.from(bucket).list("",{
-    limit:100,offset:0,sortBy:{column:"created_at",order:"desc"}
-  });
-  if(error){setStatus("Erreur : "+error.message);return;}
+h1{
+    text-align:center;
+    margin:0 0 8px
+}
 
-  grid.innerHTML="";
-  const list=(data||[]).filter(x=>x.name);
-  if(!list.length){
-    grid.innerHTML='<div class="empty">Aucune image pour le moment.<br>Ajoute ta première image.</div>';
-    setStatus("");
-    return;
-  }
+.sub{
+    text-align:center;
+    color:#666;
+    margin-bottom:22px
+}
 
-  list.forEach(x=>{
-    const path=x.name;
-    const item=document.createElement("div");
-    item.className="item"+(path===currentPath?" active":"");
-    item.dataset.path=path;
-    item.onclick=()=>showPreview(path);
+.preview{
+    border:2px solid #ddd;
+    border-radius:18px;
+    padding:12px;
+    background:#fafafa;
+    text-align:center;
+    margin-bottom:20px
+}
 
-    const img=document.createElement("img");
-    img.className="thumb";
-    img.src=publicUrl(path);
-    img.alt=path;
-    item.appendChild(img);
+.preview img{
+    width:100%;
+    max-height:390px;
+    object-fit:contain;
+    border-radius:12px;
+    background:#eee;
+    display:block
+}
 
-    const name=document.createElement("div");
-    name.className="name";
-    name.textContent=path;
-    item.appendChild(name);
+.preview-title{
+    font-weight:bold;
+    margin:12px 0 5px
+}
 
-    if(path===currentPath){
-      const badge=document.createElement("div");
-      badge.className="badge";
-      badge.textContent="IMAGE ACTUELLE";
-      item.appendChild(badge);
+.preview-state{
+    font-size:14px;
+    color:#666;
+    margin-bottom:12px
+}
+
+.use{
+    background:#5b4bdb;
+    color:#fff;
+    border:0;
+    border-radius:12px;
+    padding:14px 18px;
+    font-size:15px;
+    cursor:pointer;
+    width:100%
+}
+
+.use:disabled{
+    opacity:.5;
+    cursor:default
+}
+
+.actions{
+    display:flex;
+    gap:10px;
+    margin-bottom:18px
+}
+
+.add{
+    flex:1;
+    background:#5b4bdb;
+    color:#fff;
+    border-radius:12px;
+    padding:15px;
+    text-align:center;
+    cursor:pointer;
+    font-size:15px
+}
+
+#file{
+    display:none
+}
+
+.back{
+    background:#777;
+    color:#fff;
+    border:0;
+    border-radius:12px;
+    padding:15px 18px;
+    font-size:15px;
+    cursor:pointer
+}
+
+#status{
+    text-align:center;
+    min-height:22px;
+    color:#555;
+    margin:10px 0 18px
+}
+
+.section-title{
+    font-size:18px;
+    font-weight:bold;
+    margin:5px 0 12px
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:
+        repeat(auto-fill,minmax(145px,1fr));
+    gap:14px
+}
+
+.item{
+    position:relative;
+    border:2px solid #ddd;
+    border-radius:16px;
+    padding:8px;
+    background:#fafafa;
+    cursor:pointer;
+    transition:.15s
+}
+
+.item:hover{
+    transform:translateY(-1px)
+}
+
+.item.selected{
+    border-color:#777
+}
+
+.item.active{
+    border-color:#5b4bdb;
+    box-shadow:
+        0 0 0 2px rgba(91,75,219,.15)
+}
+
+.thumb{
+    width:100%;
+    aspect-ratio:1;
+    object-fit:cover;
+    border-radius:10px;
+    background:#eee;
+    display:block
+}
+
+.name{
+    font-size:12px;
+    margin-top:8px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis
+}
+
+.badge{
+    position:absolute;
+    left:14px;
+    top:14px;
+    background:#5b4bdb;
+    color:#fff;
+    border-radius:7px;
+    padding:5px 7px;
+    font-size:10px;
+    font-weight:bold
+}
+
+.delete{
+    position:absolute;
+    right:12px;
+    top:12px;
+    width:34px;
+    height:34px;
+    border:0;
+    border-radius:50%;
+    padding:0;
+    background:#111;
+    color:#fff;
+    font-size:19px;
+    cursor:pointer
+}
+
+.profile-badge{
+    position:absolute;
+    left:14px;
+    bottom:42px;
+    background:#111;
+    color:#fff;
+    border-radius:7px;
+    padding:5px 7px;
+    font-size:10px;
+    font-weight:bold
+}
+
+.empty{
+    grid-column:1/-1;
+    text-align:center;
+    padding:40px 10px;
+    color:#777;
+    border:2px dashed #ddd;
+    border-radius:16px
+}
+
+.image-error{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:100%;
+    aspect-ratio:1;
+    border-radius:10px;
+    background:#eee;
+    color:#999;
+    font-size:40px
+}
+
+@media(max-width:500px){
+
+    body{
+        padding:12px
     }
 
-    const del=document.createElement("button");
-    del.className="delete";
-    del.textContent="×";
-    del.title="Supprimer cette image";
-    del.onclick=async e=>{
-      e.stopPropagation();
-      await removeImage(path);
-    };
-    item.appendChild(del);
-    grid.appendChild(item);
-  });
+    .card{
+        padding:18px
+    }
 
-  setStatus("");
+    .actions{
+        flex-direction:column
+    }
+
+    .back{
+        width:100%
+    }
+
 }
 
-useBtn.onclick=async()=>{
-  if(!selectedPath || selectedPath===currentPath) return;
-  useBtn.disabled=true;
-  setStatus("Enregistrement...");
-  const {error}=await sb.from("qr-control")
-    .update({image_path:selectedPath}).eq("id",1);
+</style>
 
-  if(error){
-    setStatus("Erreur : "+error.message);
-    useBtn.disabled=false;
-    return;
-  }
+</head>
 
-  currentPath=selectedPath;
-  await loadImages();
-  showPreview(selectedPath);
-  setStatus("Image enregistrée ✓");
-};
+
+<body>
+
+
+<div class="wrap">
+
+<div class="card">
+
+
+<h1>
+    Image Library
+</h1>
+
+
+<div class="sub">
+    Choisis une image pour la prévisualiser,
+    puis valide avec « Utiliser cette image ».
+</div>
+
+
+
+<div
+    id="preview"
+    class="preview"
+    style="display:none"
+>
+
+    <img
+        id="previewImg"
+        alt="Prévisualisation"
+    >
+
+    <div
+        id="previewTitle"
+        class="preview-title"
+    ></div>
+
+    <div
+        id="previewState"
+        class="preview-state"
+    ></div>
+
+    <button
+        id="useBtn"
+        class="use"
+    >
+        UTILISER CETTE IMAGE
+    </button>
+
+</div>
+
+
+
+<div class="actions">
+
+    <label class="add">
+
+        ＋ AJOUTER UNE IMAGE
+
+        <input
+            id="file"
+            type="file"
+            accept="image/*"
+        >
+
+    </label>
+
+
+    <button
+        class="back"
+        onclick="location.href='../'"
+    >
+        ← RETOUR
+    </button>
+
+</div>
+
+
+
+<div id="status"></div>
+
+
+
+<div class="section-title">
+    MES IMAGES
+</div>
+
+
+<div
+    id="grid"
+    class="grid"
+></div>
+
+
+</div>
+
+</div>
+
+
+
+<script>
+
+
+const sb =
+    window.supabase.createClient(
+        "https://frdmtstprhyrcozuzkcf.supabase.co",
+        "sb_publishable_YkzwqM3E18r1W0ztmJjXug_qJO2htuo"
+    );
+
+
+const bucket =
+    "qr-images";
+
+
+let currentPath = null;
+
+let selectedPath = null;
+
+
+
+const grid =
+    document.getElementById("grid");
+
+
+const status =
+    document.getElementById("status");
+
+
+const file =
+    document.getElementById("file");
+
+
+const preview =
+    document.getElementById("preview");
+
+
+const previewImg =
+    document.getElementById("previewImg");
+
+
+const previewTitle =
+    document.getElementById("previewTitle");
+
+
+const previewState =
+    document.getElementById("previewState");
+
+
+const useBtn =
+    document.getElementById("useBtn");
+
+
+
+/* =========================================================
+   URL PUBLIQUE
+   ========================================================= */
+
+function publicUrl(path){
+
+    const result =
+        sb.storage
+            .from(bucket)
+            .getPublicUrl(path);
+
+    return result.data.publicUrl;
+
+}
+
+
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+function setStatus(text){
+
+    status.textContent = text;
+
+}
+
+
+
+/* =========================================================
+   SESSION
+   ========================================================= */
+
+async function requireSession(){
+
+    const {
+        data
+    } =
+        await sb.auth.getSession();
+
+
+    if(!data.session){
+
+        location.href =
+            "../../control/";
+
+        return false;
+
+    }
+
+
+    return true;
+
+}
+
+
+
+/* =========================================================
+   IMAGE ACTUELLE
+   ========================================================= */
+
+async function loadCurrent(){
+
+    const {
+        data,
+        error
+    } =
+        await sb
+            .from("qr-control")
+            .select("image_path")
+            .eq("id",1)
+            .single();
+
+
+    if(error){
+
+        throw error;
+
+    }
+
+
+    currentPath =
+        data.image_path || null;
+
+}
+
+
+
+/* =========================================================
+   PHOTO DE PROFIL
+   ========================================================= */
+
+async function loadProfileImage(){
+
+    const {
+        data,
+        error
+    } =
+        await sb
+            .from("site-content")
+            .select("profile_image_path")
+            .eq("id",1)
+            .single();
+
+
+    if(error){
+
+        console.error(
+            "Erreur chargement photo de profil :",
+            error
+        );
+
+        return null;
+
+    }
+
+
+    if(
+        !data ||
+        !data.profile_image_path
+    ){
+
+        return null;
+
+    }
+
+
+    return data.profile_image_path;
+
+}
+
+
+
+/* =========================================================
+   AFFICHAGE PREVIEW
+   ========================================================= */
+
+function showPreview(path){
+
+    selectedPath =
+        path;
+
+
+    preview.style.display =
+        "block";
+
+
+    previewImg.src =
+        publicUrl(path) +
+        "?v=" +
+        Date.now();
+
+
+    previewImg.onerror =
+        function(){
+
+            previewImg.onerror =
+                null;
+
+            previewImg.style.display =
+                "none";
+
+            previewState.textContent =
+                "Impossible de charger cette image.";
+
+        };
+
+
+    previewImg.onload =
+        function(){
+
+            previewImg.style.display =
+                "block";
+
+        };
+
+
+    previewTitle.textContent =
+        path;
+
+
+    const active =
+        path === currentPath;
+
+
+    previewState.textContent =
+        active
+            ? "✓ Cette image est actuellement utilisée par le QR."
+            : "Cette image n'est pas encore active.";
+
+
+    useBtn.disabled =
+        active;
+
+
+    useBtn.textContent =
+        active
+            ? "IMAGE ACTUELLE ✓"
+            : "UTILISER CETTE IMAGE";
+
+
+    document
+        .querySelectorAll(".item")
+        .forEach(
+            el =>
+                el.classList.remove(
+                    "selected"
+                )
+        );
+
+
+    const el =
+        document.querySelector(
+            `[data-path="${CSS.escape(path)}"]`
+        );
+
+
+    if(el){
+
+        el.classList.add(
+            "selected"
+        );
+
+    }
+
+}
+
+
+
+/* =========================================================
+   CRÉER UNE MINIATURE
+   ========================================================= */
+
+function createThumbnail(path){
+
+    const img =
+        document.createElement("img");
+
+
+    img.className =
+        "thumb";
+
+
+    img.alt =
+        path;
+
+
+    img.src =
+        publicUrl(path) +
+        "?v=" +
+        Date.now();
+
+
+    img.onerror =
+        function(){
+
+            const errorBox =
+                document.createElement("div");
+
+
+            errorBox.className =
+                "image-error";
+
+
+            errorBox.textContent =
+                "🖼️";
+
+
+            img.replaceWith(
+                errorBox
+            );
+
+        };
+
+
+    return img;
+
+}
+
+
+
+/* =========================================================
+   CRÉER UNE IMAGE DANS LA BIBLIOTHÈQUE
+   ========================================================= */
+
+function createImageItem(
+    path,
+    isProfileImage = false
+){
+
+    const item =
+        document.createElement("div");
+
+
+    item.className =
+        "item" +
+        (
+            path === currentPath
+                ? " active"
+                : ""
+        );
+
+
+    item.dataset.path =
+        path;
+
+
+    item.onclick =
+        function(){
+
+            showPreview(path);
+
+        };
+
+
+
+    const img =
+        createThumbnail(path);
+
+
+    item.appendChild(
+        img
+    );
+
+
+
+    const name =
+        document.createElement("div");
+
+
+    name.className =
+        "name";
+
+
+    name.textContent =
+        isProfileImage
+            ? "👤 Photo de profil"
+            : path;
+
+
+    item.appendChild(
+        name
+    );
+
+
+
+    if(path === currentPath){
+
+        const badge =
+            document.createElement("div");
+
+
+        badge.className =
+            "badge";
+
+
+        badge.textContent =
+            "IMAGE ACTUELLE";
+
+
+        item.appendChild(
+            badge
+        );
+
+    }
+
+
+
+    if(isProfileImage){
+
+        const profileBadge =
+            document.createElement("div");
+
+
+        profileBadge.className =
+            "profile-badge";
+
+
+        profileBadge.textContent =
+            "PROFILE";
+
+
+        item.appendChild(
+            profileBadge
+        );
+
+    }
+
+
+
+    /*
+       La photo de profil peut être utilisée
+       comme image QR, mais elle ne doit pas
+       être supprimée depuis l'Image Library.
+    */
+
+    if(!isProfileImage){
+
+        const del =
+            document.createElement("button");
+
+
+        del.className =
+            "delete";
+
+
+        del.textContent =
+            "×";
+
+
+        del.title =
+            "Supprimer cette image";
+
+
+        del.onclick =
+            async function(e){
+
+                e.stopPropagation();
+
+                await removeImage(
+                    path
+                );
+
+            };
+
+
+        item.appendChild(
+            del
+        );
+
+    }
+
+
+    grid.appendChild(
+        item
+    );
+
+}
+
+
+
+/* =========================================================
+   CHARGER LES IMAGES
+   ========================================================= */
+
+async function loadImages(){
+
+    setStatus(
+        "Chargement..."
+    );
+
+
+    grid.innerHTML =
+        "";
+
+
+
+    /*
+       On récupère d'abord les images normales
+       situées à la racine de qr-images.
+    */
+
+    const {
+        data,
+        error
+    } =
+        await sb
+            .storage
+            .from(bucket)
+            .list(
+                "",
+                {
+                    limit:100,
+                    offset:0,
+                    sortBy:{
+                        column:"created_at",
+                        order:"desc"
+                    }
+                }
+            );
+
+
+    if(error){
+
+        setStatus(
+            "Erreur : " +
+            error.message
+        );
+
+        return;
+
+    }
+
+
+
+    const list =
+        (data || [])
+            .filter(
+                x =>
+                    x.name &&
+                    x.name !== "profile"
+            );
+
+
+
+    /*
+       On récupère maintenant le contenu du
+       dossier profile/.
+    */
+
+    const {
+        data: profileFiles,
+        error: profileError
+    } =
+        await sb
+            .storage
+            .from(bucket)
+            .list(
+                "profile",
+                {
+                    limit:100,
+                    offset:0,
+                    sortBy:{
+                        column:"created_at",
+                        order:"desc"
+                    }
+                }
+            );
+
+
+
+    if(profileError){
+
+        console.warn(
+            "Impossible de lire profile/:",
+            profileError
+        );
+
+    }
+
+
+
+    /*
+       On récupère le chemin réellement enregistré
+       dans site-content.
+    */
+
+    const profilePath =
+        await loadProfileImage();
+
+
+
+    /*
+       IMAGE NORMALES
+    */
+
+    list.forEach(
+        x => {
+
+            const path =
+                x.name;
+
+            createImageItem(
+                path,
+                false
+            );
+
+        }
+    );
+
+
+
+    /*
+       PHOTO DE PROFIL
+    */
+
+    if(profilePath){
+
+        /*
+           La photo enregistrée dans
+           site-content est prioritaire.
+
+           Cela évite d'afficher une ancienne
+           photo de profil supprimée.
+        */
+
+        createImageItem(
+            profilePath,
+            true
+        );
+
+    }
+
+
+
+    if(
+        !list.length &&
+        !profilePath
+    ){
+
+        grid.innerHTML =
+            '<div class="empty">' +
+            'Aucune image pour le moment.' +
+            '<br>' +
+            'Ajoute ta première image.' +
+            '</div>';
+
+    }
+
+
+
+    setStatus("");
+
+}
+
+
+
+/* =========================================================
+   UTILISER L'IMAGE
+   ========================================================= */
+
+useBtn.onclick =
+    async function(){
+
+        if(
+            !selectedPath ||
+            selectedPath === currentPath
+        ){
+
+            return;
+
+        }
+
+
+        useBtn.disabled =
+            true;
+
+
+        setStatus(
+            "Enregistrement..."
+        );
+
+
+        const {
+            error
+        } =
+            await sb
+                .from("qr-control")
+                .update({
+                    image_path:
+                        selectedPath
+                })
+                .eq("id",1);
+
+
+
+        if(error){
+
+            setStatus(
+                "Erreur : " +
+                error.message
+            );
+
+
+            useBtn.disabled =
+                false;
+
+
+            return;
+
+        }
+
+
+        currentPath =
+            selectedPath;
+
+
+        await loadImages();
+
+
+        showPreview(
+            selectedPath
+        );
+
+
+        setStatus(
+            "Image enregistrée ✓"
+        );
+
+    };
+
+
+
+/* =========================================================
+   SUPPRIMER UNE IMAGE
+   ========================================================= */
 
 async function removeImage(path){
-  if(path===currentPath){
-    alert("Cette image est actuellement utilisée. Sélectionne d'abord une autre image.");
-    return;
-  }
 
-  if(!confirm("Supprimer définitivement cette image ?")) return;
+    if(
+        path === currentPath
+    ){
 
-  setStatus("Suppression...");
-  const {error}=await sb.storage.from(bucket).remove([path]);
-  if(error){setStatus("Erreur : "+error.message);return;}
+        alert(
+            "Cette image est actuellement utilisée. " +
+            "Sélectionne d'abord une autre image."
+        );
 
-  if(selectedPath===path){
-    selectedPath=null;
-    preview.style.display="none";
-  }
+        return;
 
-  await loadImages();
-  setStatus("Image supprimée ✓");
+    }
+
+
+    if(
+        !confirm(
+            "Supprimer définitivement cette image ?"
+        )
+    ){
+
+        return;
+
+    }
+
+
+    setStatus(
+        "Suppression..."
+    );
+
+
+    const {
+        error
+    } =
+        await sb
+            .storage
+            .from(bucket)
+            .remove([
+                path
+            ]);
+
+
+    if(error){
+
+        setStatus(
+            "Erreur : " +
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    if(
+        selectedPath === path
+    ){
+
+        selectedPath =
+            null;
+
+        preview.style.display =
+            "none";
+
+    }
+
+
+    await loadImages();
+
+
+    setStatus(
+        "Image supprimée ✓"
+    );
+
 }
 
-file.onchange=async()=>{
-  const f=file.files[0];
-  if(!f)return;
 
-  if(!f.type.startsWith("image/")){
-    setStatus("Ce fichier n'est pas une image.");
-    file.value="";
-    return;
-  }
 
-  setStatus("Importation...");
-  const ext=(f.name.split(".").pop()||"jpg").toLowerCase();
-  const base=(f.name.replace(/\.[^/.]+$/,"")
-    .replace(/[^a-zA-Z0-9_-]+/g,"-")
-    .replace(/^-+|-+$/g,"")
-    .slice(0,60)||"image");
-  const name=Date.now()+"-"+base+"."+ext;
+/* =========================================================
+   AJOUTER UNE IMAGE
+   ========================================================= */
 
-  const {error}=await sb.storage.from(bucket).upload(name,f,{
-    upsert:false,contentType:f.type,cacheControl:"3600"
-  });
+file.onchange =
+    async function(){
 
-  file.value="";
-  if(error){setStatus("Erreur : "+error.message);return;}
+        const f =
+            file.files[0];
 
-  await loadImages();
-  showPreview(name);
-  setStatus("Image importée ✓");
-};
 
-(async()=>{
-  if(!(await requireSession()))return;
-  try{
-    await loadCurrent();
-    await loadImages();
-    if(currentPath) showPreview(currentPath);
-  }catch(e){
-    setStatus("Erreur : "+e.message);
-  }
+        if(!f){
+
+            return;
+
+        }
+
+
+        if(
+            !f.type.startsWith(
+                "image/"
+            )
+        ){
+
+            setStatus(
+                "Ce fichier n'est pas une image."
+            );
+
+
+            file.value =
+                "";
+
+
+            return;
+
+        }
+
+
+        setStatus(
+            "Importation..."
+        );
+
+
+        const ext =
+            (
+                f.name
+                    .split(".")
+                    .pop() ||
+                "jpg"
+            )
+            .toLowerCase();
+
+
+        const base =
+            (
+                f.name
+                    .replace(
+                        /\.[^/.]+$/,
+                        ""
+                    )
+                    .replace(
+                        /[^a-zA-Z0-9_-]+/g,
+                        "-"
+                    )
+                    .replace(
+                        /^-+|-+$/g,
+                        ""
+                    )
+                    .slice(
+                        0,
+                        60
+                    ) ||
+                "image"
+            );
+
+
+        const name =
+            Date.now() +
+            "-" +
+            base +
+            "." +
+            ext;
+
+
+
+        const {
+            error
+        } =
+            await sb
+                .storage
+                .from(bucket)
+                .upload(
+                    name,
+                    f,
+                    {
+                        upsert:false,
+                        contentType:f.type,
+                        cacheControl:"3600"
+                    }
+                );
+
+
+        file.value =
+            "";
+
+
+        if(error){
+
+            setStatus(
+                "Erreur : " +
+                error.message
+            );
+
+            return;
+
+        }
+
+
+        await loadImages();
+
+
+        showPreview(
+            name
+        );
+
+
+        setStatus(
+            "Image importée ✓"
+        );
+
+    };
+
+
+
+/* =========================================================
+   INITIALISATION
+   ========================================================= */
+
+(async function(){
+
+    if(
+        !(await requireSession())
+    ){
+
+        return;
+
+    }
+
+
+    try{
+
+        await loadCurrent();
+
+        await loadImages();
+
+
+        if(currentPath){
+
+            showPreview(
+                currentPath
+            );
+
+        }
+
+    }
+    catch(e){
+
+        setStatus(
+            "Erreur : " +
+            e.message
+        );
+
+    }
+
 })();
+
+
 </script>
+
 </body>
 </html>
