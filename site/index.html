@@ -5,7 +5,10 @@
 
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Romain Bousquet</title>
 
@@ -17,73 +20,116 @@
             box-sizing: border-box;
         }
 
+
         body {
             margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
             background: #f2f2f2;
+
             color: #111;
         }
 
+
         .container {
             width: 100%;
+
             max-width: 500px;
+
             margin: auto;
+
             padding: 30px 20px;
         }
+
 
         .profile {
             text-align: center;
         }
 
+
         .profile img {
             width: 120px;
             height: 120px;
+
             object-fit: cover;
+
             border-radius: 50%;
+
             margin-bottom: 15px;
         }
 
+
         h1 {
             margin: 5px 0;
+
             font-size: 28px;
         }
 
+
         .description {
             color: #666;
+
             margin-bottom: 30px;
         }
 
+
         .button {
             display: block;
+
             width: 100%;
+
             padding: 16px;
+
             margin: 12px 0;
+
             background: white;
+
             color: #111;
+
             text-decoration: none;
+
             border-radius: 12px;
+
             text-align: center;
+
             font-size: 17px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+
+            box-shadow:
+                0 3px 10px
+                rgba(0, 0, 0, 0.08);
+
             transition: 0.2s;
+
             cursor: pointer;
         }
+
 
         .button:hover {
             transform: scale(1.02);
         }
 
+
         .footer {
             text-align: center;
+
             margin-top: 30px;
+
             color: #999;
+
             font-size: 13px;
         }
 
+
         #loading {
             text-align: center;
+
             color: #777;
         }
+
 
         #content {
             display: none;
@@ -93,20 +139,28 @@
 
 </head>
 
+
 <body>
 
 
 <div class="container">
+
 
     <div id="loading">
         Chargement...
     </div>
 
 
+
     <div id="content">
 
 
+        <!-- =================================================
+             PROFIL
+             ================================================= -->
+
         <div class="profile">
+
 
             <img
                 id="profileImage"
@@ -114,9 +168,11 @@
                 alt="Photo"
             >
 
+
             <h1 id="name">
                 Romain Bousquet
             </h1>
+
 
             <div
                 id="title"
@@ -125,8 +181,14 @@
                 Pilot ✈️
             </div>
 
+
         </div>
 
+
+
+        <!-- =================================================
+             TÉLÉPHONE
+             ================================================= -->
 
         <a
             id="phoneButton"
@@ -136,6 +198,11 @@
         </a>
 
 
+
+        <!-- =================================================
+             EMAIL
+             ================================================= -->
+
         <a
             id="emailButton"
             class="button"
@@ -143,6 +210,26 @@
             ✉️ Email
         </a>
 
+
+
+        <!-- =================================================
+             ADRESSE
+             ================================================= -->
+
+        <a
+            id="addressButton"
+            class="button"
+            target="_blank"
+            rel="noopener noreferrer"
+        >
+            📍 Adresse
+        </a>
+
+
+
+        <!-- =================================================
+             INSTAGRAM
+             ================================================= -->
 
         <a
             id="instagramButton"
@@ -154,6 +241,11 @@
         </a>
 
 
+
+        <!-- =================================================
+             CV
+             ================================================= -->
+
         <a
             id="cvButton"
             class="button"
@@ -164,17 +256,25 @@
         </a>
 
 
+
         <div class="footer">
             QR Digital Card
         </div>
 
+
     </div>
+
 
 </div>
 
 
+
 <script>
 
+
+// =====================================================
+// SUPABASE
+// =====================================================
 
 const SUPABASE_URL =
     "https://frdmtstprhyrcozuzkcf.supabase.co";
@@ -191,9 +291,14 @@ const supabaseClient =
     );
 
 
-const BUCKET = "qr-images";
+const BUCKET =
+    "qr-images";
 
 
+
+// =====================================================
+// CHARGER LE SITE
+// =====================================================
 
 async function loadSite() {
 
@@ -212,6 +317,11 @@ async function loadSite() {
         .single();
 
 
+
+    // =================================================
+    // ERREUR
+    // =================================================
+
     if (error) {
 
         console.error(error);
@@ -222,28 +332,39 @@ async function loadSite() {
             "Erreur de chargement.";
 
         return;
+
     }
 
 
-    console.log("DONNÉES SUPABASE :", data);
+
+    console.log(
+        "DONNÉES SUPABASE :",
+        data
+    );
 
 
 
+    // =================================================
     // NOM
+    // =================================================
 
     document.getElementById(
         "name"
     ).textContent =
-        data.name || "Romain Bousquet";
+        data.name ||
+        "Romain Bousquet";
 
 
 
+    // =================================================
     // TITRE
+    // =================================================
 
     document.getElementById(
         "title"
     ).textContent =
-        data.title || "Pilot ✈️";
+        data.title ||
+        "Pilot ✈️";
 
 
 
@@ -262,6 +383,11 @@ async function loadSite() {
         phone.href =
             "tel:" +
             data.phone;
+
+    } else {
+
+        phone.href =
+            "#";
 
     }
 
@@ -285,7 +411,61 @@ async function loadSite() {
 
     } else {
 
-        email.href = "#";
+        email.href =
+            "#";
+
+    }
+
+
+
+    // =================================================
+    // ADRESSE
+    // =================================================
+
+    const address =
+        document.getElementById(
+            "addressButton"
+        );
+
+
+    if (data.address) {
+
+
+        const addressText =
+            data.address.trim();
+
+
+        // Afficher l'adresse directement
+        // dans le bouton
+
+        address.textContent =
+            "📍 " +
+            addressText;
+
+
+        // Ouvrir Google Maps avec
+        // l'adresse renseignée
+
+        address.href =
+            "https://www.google.com/maps/search/?api=1&query=" +
+            encodeURIComponent(
+                addressText
+            );
+
+
+        address.style.display =
+            "block";
+
+
+    } else {
+
+
+        // Si aucune adresse n'est
+        // renseignée dans Customize,
+        // le bouton disparaît.
+
+        address.style.display =
+            "none";
 
     }
 
@@ -303,13 +483,18 @@ async function loadSite() {
 
     if (data.instagram_url) {
 
+
         let instagramURL =
             data.instagram_url.trim();
 
 
         if (
-            !instagramURL.startsWith("http://") &&
-            !instagramURL.startsWith("https://")
+            !instagramURL.startsWith(
+                "http://"
+            ) &&
+            !instagramURL.startsWith(
+                "https://"
+            )
         ) {
 
             instagramURL =
@@ -322,9 +507,12 @@ async function loadSite() {
         instagram.href =
             instagramURL;
 
+
     } else {
 
-        instagram.href = "#";
+
+        instagram.href =
+            "#";
 
     }
 
@@ -341,6 +529,7 @@ async function loadSite() {
 
 
     if (data.cv_path) {
+
 
         const {
             data: publicURL
@@ -359,9 +548,12 @@ async function loadSite() {
         cv.href =
             publicURL.publicUrl;
 
+
     } else {
 
-        cv.href = "#";
+
+        cv.href =
+            "#";
 
     }
 
@@ -378,6 +570,7 @@ async function loadSite() {
 
 
     if (data.profile_image_path) {
+
 
         const {
             data: publicURL
@@ -402,6 +595,10 @@ async function loadSite() {
 
 
 
+    // =================================================
+    // AFFICHER LE CONTENU
+    // =================================================
+
     document.getElementById(
         "loading"
     ).style.display =
@@ -416,7 +613,13 @@ async function loadSite() {
 }
 
 
+
+// =====================================================
+// LANCER
+// =====================================================
+
 loadSite();
+
 
 </script>
 
