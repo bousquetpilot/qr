@@ -10,7 +10,7 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Lien</title>
+    <title>Redirection...</title>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -31,60 +31,12 @@
             font-family: Arial, Helvetica, sans-serif;
 
             background: #f2f2f2;
-            color: #111;
+            color: #777;
         }
 
-        .container {
-            width: 100%;
-            max-width: 500px;
-            padding: 30px 20px;
+        .message {
             text-align: center;
-        }
-
-        .title {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-
-        .description {
-            color: #777;
-            margin-bottom: 25px;
-        }
-
-        .button {
-            display: block;
-
-            width: 100%;
-
-            padding: 16px;
-
-            background: white;
-            color: #111;
-
-            text-decoration: none;
-
-            border-radius: 12px;
-
-            font-size: 17px;
-
-            box-shadow:
-                0 3px 10px
-                rgba(0,0,0,0.08);
-
-            transition: 0.2s;
-        }
-
-        .button:hover {
-            transform: scale(1.02);
-        }
-
-        #loading {
-            color: #777;
-        }
-
-        #content {
-            display: none;
+            padding: 30px;
         }
 
     </style>
@@ -95,41 +47,9 @@
 <body>
 
 
-<div class="container">
+<div class="message">
 
-
-    <div id="loading">
-        Chargement...
-    </div>
-
-
-    <div id="content">
-
-        <div
-            id="linkName"
-            class="title"
-        >
-            Lien
-        </div>
-
-
-        <div class="description">
-            Redirection vers le lien sélectionné
-        </div>
-
-
-        <a
-            id="linkButton"
-            class="button"
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            🔗 Ouvrir le lien
-        </a>
-
-    </div>
-
+    Redirection...
 
 </div>
 
@@ -159,26 +79,25 @@ const supabaseClient =
 
 
 // =====================================================
-// CHARGER LE LIEN ACTUEL
+// REDIRECTION AUTOMATIQUE
 // =====================================================
 
-async function loadLink() {
+async function redirectToLink() {
 
 
     const {
         data,
         error
-    } = await supabaseClient
+    } =
+        await supabaseClient
 
-        .from("site-content")
+            .from("site-content")
 
-        .select(
-            "link_name, link_url"
-        )
+            .select("link_url")
 
-        .eq("id", 1)
+            .eq("id", 1)
 
-        .single();
+            .single();
 
 
 
@@ -193,57 +112,44 @@ async function loadLink() {
             error
         );
 
-        document.getElementById(
-            "loading"
+        document.querySelector(
+            ".message"
         ).textContent =
             "Impossible de charger le lien.";
 
         return;
+
     }
 
 
 
-    console.log(
-        "LIEN ACTUEL :",
-        data
-    );
-
-
-
     // =================================================
-    // VÉRIFIER L'URL
+    // AUCUN LIEN
     // =================================================
 
-    if (!data.link_url) {
+    if (
+        !data ||
+        !data.link_url
+    ) {
 
-        document.getElementById(
-            "loading"
+        document.querySelector(
+            ".message"
         ).textContent =
             "Aucun lien configuré.";
 
         return;
+
     }
 
 
 
     // =================================================
-    // NOM
-    // =================================================
-
-    document.getElementById(
-        "linkName"
-    ).textContent =
-        data.link_name ||
-        "Ouvrir le lien";
-
-
-
-    // =================================================
-    // URL
+    // PRÉPARER L'URL
     // =================================================
 
     let url =
         data.link_url.trim();
+
 
 
     if (
@@ -259,33 +165,30 @@ async function loadLink() {
 
 
 
-    document.getElementById(
-        "linkButton"
-    ).href =
-        url;
+    console.log(
+        "Redirection automatique vers :",
+        url
+    );
 
 
 
     // =================================================
-    // AFFICHAGE
+    // REDIRECTION IMMÉDIATE
     // =================================================
 
-    document.getElementById(
-        "loading"
-    ).style.display =
-        "none";
-
-
-    document.getElementById(
-        "content"
-    ).style.display =
-        "block";
+    window.location.replace(
+        url
+    );
 
 }
 
 
 
-loadLink();
+// =====================================================
+// LANCER LA REDIRECTION
+// =====================================================
+
+redirectToLink();
 
 </script>
 
