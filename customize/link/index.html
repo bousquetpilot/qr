@@ -177,6 +177,31 @@
             padding: 20px 0;
         }
 
+        .current-box {
+            background: #f8f7ff;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .current-label {
+            font-size: 13px;
+            color: #777;
+            margin-bottom: 5px;
+        }
+
+        .current-name {
+            font-weight: bold;
+            font-size: 17px;
+        }
+
+        .current-url {
+            font-size: 13px;
+            color: #777;
+            word-break: break-all;
+            margin-top: 5px;
+        }
+
     </style>
 
 </head>
@@ -196,7 +221,35 @@
 
 
 
-    <!-- AJOUT -->
+    <!-- =================================================
+         LIEN ACTUEL
+         ================================================= -->
+
+    <div class="current-box">
+
+        <div class="current-label">
+            LIEN ACTUEL
+        </div>
+
+        <div
+            id="currentName"
+            class="current-name"
+        >
+            Chargement...
+        </div>
+
+        <div
+            id="currentUrl"
+            class="current-url"
+        ></div>
+
+    </div>
+
+
+
+    <!-- =================================================
+         AJOUTER UN LIEN
+         ================================================= -->
 
     <div class="section">
 
@@ -212,7 +265,7 @@
         <input
             id="linkName"
             type="text"
-            placeholder="Instagram"
+            placeholder="YouTube"
         >
 
 
@@ -223,7 +276,7 @@
         <input
             id="linkUrl"
             type="url"
-            placeholder="https://www.instagram.com/..."
+            placeholder="https://www.youtube.com/"
         >
 
 
@@ -238,7 +291,9 @@
 
 
 
-    <!-- BIBLIOTHÈQUE -->
+    <!-- =================================================
+         BIBLIOTHÈQUE
+         ================================================= -->
 
     <div class="section">
 
@@ -293,14 +348,25 @@ const supabaseClient =
 
 
 // =====================================================
-// SESSION
+// VARIABLES
+// =====================================================
+
+let currentLink = "";
+
+let currentLinkName = "";
+
+
+
+// =====================================================
+// VÉRIFICATION SESSION
 // =====================================================
 
 async function checkSession() {
 
     const {
         data: { session }
-    } = await supabaseClient.auth.getSession();
+    } =
+        await supabaseClient.auth.getSession();
 
 
     if (!session) {
@@ -312,17 +378,9 @@ async function checkSession() {
 
 
     return true;
+
 }
 
-
-
-// =====================================================
-// LIEN ACTUEL
-// =====================================================
-
-let currentLink = "";
-
-let currentLinkName = "";
 
 
 // =====================================================
@@ -334,27 +392,34 @@ async function loadCurrentLink() {
     const {
         data,
         error
-    } = await supabaseClient
+    } =
+        await supabaseClient
 
-        .from("site-content")
+            .from("site-content")
 
-        .select(
-            "link_name, link_url"
-        )
+            .select(
+                "link_name, link_url"
+            )
 
-        .eq("id", 1)
+            .eq("id", 1)
 
-        .single();
+            .single();
 
 
     if (error) {
 
         console.error(
-            "Erreur lien actuel :",
+            "Erreur chargement lien actuel :",
             error
         );
 
+        document.getElementById(
+            "currentName"
+        ).textContent =
+            "Erreur de chargement";
+
         return;
+
     }
 
 
@@ -364,6 +429,22 @@ async function loadCurrentLink() {
 
     currentLinkName =
         data.link_name || "";
+
+
+
+    // Afficher le lien actuel
+
+    document.getElementById(
+        "currentName"
+    ).textContent =
+        currentLinkName ||
+        "Aucun lien sélectionné";
+
+
+    document.getElementById(
+        "currentUrl"
+    ).textContent =
+        currentLink;
 
 }
 
@@ -378,23 +459,30 @@ async function loadLinks() {
     const {
         data,
         error
-    } = await supabaseClient
+    } =
+        await supabaseClient
 
-        .from("link-library")
+            .from("link-library")
 
-        .select(
-            "id, name, url, created_at"
-        )
+            .select(
+                "id, name, url, created_at"
+            )
 
-        .order(
-            "created_at",
-            {
-                ascending: false
-            }
-        );
+            .order(
+                "created_at",
+                {
+                    ascending: false
+                }
+            );
 
 
     if (error) {
+
+        console.error(
+            "Erreur bibliothèque :",
+            error
+        );
+
 
         document.getElementById(
             "linksList"
@@ -402,13 +490,14 @@ async function loadLinks() {
             '<div class="empty">Erreur de chargement.</div>';
 
 
-        console.error(error);
-
         return;
+
     }
 
 
-    renderLinks(data || []);
+    renderLinks(
+        data || []
+    );
 
 }
 
@@ -435,6 +524,7 @@ function renderLinks(links) {
             '<div class="empty">Aucun lien enregistré.</div>';
 
         return;
+
     }
 
 
@@ -467,6 +557,8 @@ function renderLinks(links) {
 
 
 
+            // NOM
+
             const name =
                 document.createElement(
                     "div"
@@ -481,6 +573,8 @@ function renderLinks(links) {
                 link.name;
 
 
+
+            // URL
 
             const url =
                 document.createElement(
@@ -497,11 +591,18 @@ function renderLinks(links) {
 
 
 
-            card.appendChild(name);
+            card.appendChild(
+                name
+            );
 
-            card.appendChild(url);
+
+            card.appendChild(
+                url
+            );
 
 
+
+            // BADGE ACTIF
 
             if (isActive) {
 
@@ -527,6 +628,8 @@ function renderLinks(links) {
 
 
 
+            // BOUTONS
+
             const buttons =
                 document.createElement(
                     "div"
@@ -537,6 +640,8 @@ function renderLinks(links) {
                 "card-buttons";
 
 
+
+            // UTILISER
 
             const useButton =
                 document.createElement(
@@ -555,10 +660,11 @@ function renderLinks(links) {
             useButton.onclick =
                 function() {
 
-                    useLink(link);
+                    useLink(
+                        link
+                    );
 
                 };
-
 
 
             buttons.appendChild(
@@ -567,8 +673,7 @@ function renderLinks(links) {
 
 
 
-            // On ne permet pas de supprimer
-            // le lien actuellement actif.
+            // SUPPRIMER
 
             if (!isActive) {
 
@@ -589,7 +694,9 @@ function renderLinks(links) {
                 deleteButton.onclick =
                     function() {
 
-                        deleteLink(link);
+                        deleteLink(
+                            link
+                        );
 
                     };
 
@@ -624,7 +731,6 @@ function renderLinks(links) {
 
 async function addLink() {
 
-
     let name =
         document.getElementById(
             "linkName"
@@ -646,7 +752,9 @@ async function addLink() {
         );
 
         return;
+
     }
+
 
 
     if (!url) {
@@ -657,11 +765,12 @@ async function addLink() {
         );
 
         return;
+
     }
 
 
 
-    // Ajouter https automatiquement
+    // Ajouter HTTPS automatiquement
 
     if (
         !url.startsWith("http://") &&
@@ -677,22 +786,32 @@ async function addLink() {
 
 
     const {
+        data,
         error
-    } = await supabaseClient
+    } =
+        await supabaseClient
 
-        .from("link-library")
+            .from("link-library")
 
-        .insert({
+            .insert({
 
-            name: name,
+                name: name,
 
-            url: url
+                url: url
 
-        });
+            })
+
+            .select()
+            .single();
 
 
 
     if (error) {
+
+        console.error(
+            "Erreur ajout lien :",
+            error
+        );
 
         showMessage(
             "Erreur : " +
@@ -701,7 +820,15 @@ async function addLink() {
         );
 
         return;
+
     }
+
+
+
+    console.log(
+        "Lien ajouté :",
+        data
+    );
 
 
 
@@ -713,6 +840,7 @@ async function addLink() {
     document.getElementById(
         "linkUrl"
     ).value = "";
+
 
 
     await loadLinks();
@@ -733,28 +861,81 @@ async function addLink() {
 
 async function useLink(link) {
 
+    console.log(
+        "================================="
+    );
+
+    console.log(
+        "SÉLECTION DU LIEN"
+    );
+
+    console.log(
+        "Nom :",
+        link.name
+    );
+
+    console.log(
+        "URL :",
+        link.url
+    );
+
+    console.log(
+        "================================="
+    );
+
+
+
+    showMessage(
+        "Enregistrement...",
+        false
+    );
+
+
+
+    // =================================================
+    // ÉCRIRE DANS SITE-CONTENT
+    // =================================================
 
     const {
+        data,
         error
-    } = await supabaseClient
+    } =
+        await supabaseClient
 
-        .from("site-content")
+            .from("site-content")
 
-        .update({
+            .update({
 
-            link_name:
-                link.name,
+                link_name:
+                    link.name,
 
-            link_url:
-                link.url
+                link_url:
+                    link.url
 
-        })
+            })
 
-        .eq("id", 1);
+            .eq(
+                "id",
+                1
+            )
+
+            .select(
+                "id, link_name, link_url"
+            );
 
 
+
+    // =================================================
+    // ERREUR
+    // =================================================
 
     if (error) {
+
+        console.error(
+            "ERREUR UPDATE SITE-CONTENT :",
+            error
+        );
+
 
         showMessage(
             "Erreur : " +
@@ -762,20 +943,116 @@ async function useLink(link) {
             true
         );
 
+
         return;
+
     }
 
 
 
+    // =================================================
+    // AUCUNE LIGNE MODIFIÉE
+    // =================================================
+
+    if (
+        !data ||
+        data.length === 0
+    ) {
+
+        console.error(
+            "Aucune ligne n'a été modifiée."
+        );
+
+
+        showMessage(
+            "La modification n'a pas été enregistrée.",
+            true
+        );
+
+
+        return;
+
+    }
+
+
+
+    // =================================================
+    // VÉRIFICATION
+    // =================================================
+
+    const saved =
+        data[0];
+
+
+    console.log(
+        "DONNÉES ENREGISTRÉES :",
+        saved
+    );
+
+
+
+    // Vérifier que Supabase
+    // contient bien le bon lien.
+
+    if (
+        saved.link_url !==
+        link.url
+    ) {
+
+        console.error(
+            "L'URL enregistrée ne correspond pas !",
+            saved.link_url
+        );
+
+
+        showMessage(
+            "Erreur : l'URL enregistrée est incorrecte.",
+            true
+        );
+
+
+        return;
+
+    }
+
+
+
+    // =================================================
+    // METTRE À JOUR L'ÉTAT LOCAL
+    // =================================================
+
     currentLink =
-        link.url;
+        saved.link_url;
 
 
     currentLinkName =
-        link.name;
+        saved.link_name;
 
+
+
+    // =================================================
+    // AFFICHER LE NOUVEAU LIEN ACTUEL
+    // =================================================
+
+    document.getElementById(
+        "currentName"
+    ).textContent =
+        currentLinkName;
+
+
+    document.getElementById(
+        "currentUrl"
+    ).textContent =
+        currentLink;
+
+
+
+    // =================================================
+    // RECHARGER LA BIBLIOTHÈQUE
+    // =================================================
 
     await loadLinks();
+
 
 
     showMessage(
@@ -788,14 +1065,17 @@ async function useLink(link) {
 
 
 // =====================================================
-// SUPPRIMER
+// SUPPRIMER UN LIEN
 // =====================================================
 
 async function deleteLink(link) {
 
 
+    // Sécurité supplémentaire
+
     if (
-        link.url === currentLink
+        link.url ===
+        currentLink
     ) {
 
         alert(
@@ -803,39 +1083,50 @@ async function deleteLink(link) {
         );
 
         return;
+
     }
 
 
 
-    if (
-        !confirm(
+    const confirmed =
+        confirm(
             "Supprimer le lien « " +
             link.name +
             " » ?"
-        )
-    ) {
+        );
+
+
+    if (!confirmed) {
 
         return;
+
     }
 
 
 
     const {
         error
-    } = await supabaseClient
+    } =
+        await supabaseClient
 
-        .from("link-library")
+            .from("link-library")
 
-        .delete()
+            .delete()
 
-        .eq(
-            "id",
-            link.id
-        );
+            .eq(
+                "id",
+                link.id
+            );
 
 
 
     if (error) {
+
+        console.error(
+            "Erreur suppression :",
+            error
+        );
+
 
         showMessage(
             "Erreur : " +
@@ -843,7 +1134,9 @@ async function deleteLink(link) {
             true
         );
 
+
         return;
+
     }
 
 
@@ -866,7 +1159,7 @@ async function deleteLink(link) {
 
 function showMessage(
     text,
-    error
+    isError
 ) {
 
     const message =
@@ -880,7 +1173,7 @@ function showMessage(
 
 
     message.className =
-        error
+        isError
             ? "error"
             : "success";
 
@@ -911,6 +1204,7 @@ async function init() {
     if (!loggedIn) {
 
         return;
+
     }
 
 
