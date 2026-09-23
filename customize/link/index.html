@@ -1,1 +1,898 @@
+<!DOCTYPE html>
+<html lang="fr">
 
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Link Library</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            background: #f5f5f7;
+            padding: 25px 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 520px;
+            margin: auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            text-align: center;
+            margin: 0 0 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #777;
+            margin-bottom: 25px;
+        }
+
+        .section {
+            margin-top: 25px;
+            padding-top: 22px;
+            border-top: 1px solid #eee;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 7px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #5b4bdb;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 11px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .add {
+            background: #5b4bdb;
+            color: white;
+        }
+
+        .back {
+            background: #eee;
+            color: #333;
+        }
+
+        .link-card {
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 12px;
+        }
+
+        .link-card.active {
+            border: 2px solid #5b4bdb;
+            background: #f8f7ff;
+        }
+
+        .link-name {
+            font-weight: bold;
+            font-size: 17px;
+            margin-bottom: 7px;
+        }
+
+        .link-url {
+            font-size: 13px;
+            color: #777;
+            word-break: break-all;
+        }
+
+        .active-badge {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 5px 9px;
+            border-radius: 20px;
+            background: #5b4bdb;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .card-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .card-buttons button {
+            margin-top: 0;
+        }
+
+        .use {
+            background: #5b4bdb;
+            color: white;
+        }
+
+        .delete {
+            background: #eee;
+            color: #c62828;
+        }
+
+        #message {
+            text-align: center;
+            margin-top: 15px;
+            min-height: 20px;
+        }
+
+        .success {
+            color: #16833b;
+        }
+
+        .error {
+            color: #c62828;
+        }
+
+        .empty {
+            text-align: center;
+            color: #888;
+            padding: 20px 0;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <h1>🔗 Link Library</h1>
+
+    <div class="subtitle">
+        Gère le lien affiché par ton QR
+    </div>
+
+
+
+    <!-- =================================================
+         AJOUTER UN LIEN
+         ================================================= -->
+
+    <div class="section">
+
+        <div class="section-title">
+            ➕ Ajouter un lien
+        </div>
+
+
+        <label for="linkName">
+            Nom du lien
+        </label>
+
+        <input
+            id="linkName"
+            type="text"
+            placeholder="Instagram"
+        >
+
+
+        <label for="linkUrl">
+            URL
+        </label>
+
+        <input
+            id="linkUrl"
+            type="url"
+            placeholder="https://www.instagram.com/..."
+        >
+
+
+        <button
+            class="add"
+            onclick="addLink()"
+        >
+            ➕ AJOUTER LE LIEN
+        </button>
+
+    </div>
+
+
+
+    <!-- =================================================
+         BIBLIOTHÈQUE
+         ================================================= -->
+
+    <div class="section">
+
+        <div class="section-title">
+            📚 Mes liens
+        </div>
+
+
+        <div id="linksList">
+            Chargement...
+        </div>
+
+    </div>
+
+
+
+    <button
+        class="back"
+        onclick="location.href='../'"
+    >
+        ← RETOUR
+    </button>
+
+
+    <div id="message"></div>
+
+
+</div>
+
+
+
+<script>
+
+
+// =====================================================
+// SUPABASE
+// =====================================================
+
+const SUPABASE_URL =
+    "https://frdmtstprhyrcozuzkcf.supabase.co";
+
+
+const SUPABASE_KEY =
+    "sb_publishable_YkzwqM3E18r1W0ztmJjXug_qJO2htuo";
+
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+
+// =====================================================
+// STOCKAGE LOCAL DES LIENS
+// =====================================================
+//
+// Pour l'instant la bibliothèque est stockée
+// directement dans le navigateur.
+// Le lien actuellement utilisé est lui stocké
+// dans Supabase.
+// =====================================================
+
+let links = [];
+
+
+// =====================================================
+// VÉRIFICATION SESSION
+// =====================================================
+
+async function checkSession() {
+
+    const {
+        data: { session }
+    } = await supabaseClient.auth.getSession();
+
+
+    if (!session) {
+
+        location.href = "../";
+
+        return false;
+    }
+
+
+    return true;
+}
+
+
+
+// =====================================================
+// CHARGER LE LIEN ACTUEL
+// =====================================================
+
+async function loadCurrentLink() {
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+
+        .from("site-content")
+
+        .select(
+            "link_name, link_url"
+        )
+
+        .eq("id", 1)
+
+        .single();
+
+
+    if (error) {
+
+        console.error(error);
+
+        return;
+    }
+
+
+    window.currentLink =
+        data.link_url || "";
+
+
+    window.currentLinkName =
+        data.link_name || "";
+
+}
+
+
+
+// =====================================================
+// CHARGER LA BIBLIOTHÈQUE
+// =====================================================
+
+function loadLibrary() {
+
+    const saved =
+        localStorage.getItem(
+            "qr-link-library"
+        );
+
+
+    if (saved) {
+
+        try {
+
+            links =
+                JSON.parse(saved);
+
+        } catch {
+
+            links = [];
+
+        }
+
+    }
+
+
+    renderLinks();
+
+}
+
+
+
+// =====================================================
+// SAUVEGARDER LA BIBLIOTHÈQUE
+// =====================================================
+
+function saveLibrary() {
+
+    localStorage.setItem(
+        "qr-link-library",
+        JSON.stringify(links)
+    );
+
+}
+
+
+
+// =====================================================
+// AFFICHER LES LIENS
+// =====================================================
+
+function renderLinks() {
+
+    const container =
+        document.getElementById(
+            "linksList"
+        );
+
+
+    container.innerHTML = "";
+
+
+    if (links.length === 0) {
+
+        container.innerHTML =
+            '<div class="empty">Aucun lien enregistré.</div>';
+
+        return;
+    }
+
+
+    links.forEach(
+        function(link, index) {
+
+
+            const card =
+                document.createElement(
+                    "div"
+                );
+
+
+            card.className =
+                "link-card";
+
+
+            if (
+                link.url ===
+                window.currentLink
+            ) {
+
+                card.classList.add(
+                    "active"
+                );
+
+            }
+
+
+            const name =
+                document.createElement(
+                    "div"
+                );
+
+
+            name.className =
+                "link-name";
+
+
+            name.textContent =
+                link.name;
+
+
+            const url =
+                document.createElement(
+                    "div"
+                );
+
+
+            url.className =
+                "link-url";
+
+
+            url.textContent =
+                link.url;
+
+
+            card.appendChild(name);
+
+            card.appendChild(url);
+
+
+
+            if (
+                link.url ===
+                window.currentLink
+            ) {
+
+                const badge =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                badge.className =
+                    "active-badge";
+
+
+                badge.textContent =
+                    "LIEN ACTUEL";
+
+
+                card.appendChild(
+                    badge
+                );
+
+            }
+
+
+
+            const buttons =
+                document.createElement(
+                    "div"
+                );
+
+
+            buttons.className =
+                "card-buttons";
+
+
+
+            const useButton =
+                document.createElement(
+                    "button"
+                );
+
+
+            useButton.className =
+                "use";
+
+
+            useButton.textContent =
+                "UTILISER CE LIEN";
+
+
+            useButton.onclick =
+                function() {
+
+                    useLink(index);
+
+                };
+
+
+
+            const deleteButton =
+                document.createElement(
+                    "button"
+                );
+
+
+            deleteButton.className =
+                "delete";
+
+
+            deleteButton.textContent =
+                "SUPPRIMER";
+
+
+            deleteButton.onclick =
+                function() {
+
+                    deleteLink(index);
+
+                };
+
+
+
+            buttons.appendChild(
+                useButton
+            );
+
+
+            buttons.appendChild(
+                deleteButton
+            );
+
+
+            card.appendChild(
+                buttons
+            );
+
+
+            container.appendChild(
+                card
+            );
+
+        }
+    );
+
+}
+
+
+
+// =====================================================
+// AJOUTER
+// =====================================================
+
+function addLink() {
+
+
+    let name =
+        document.getElementById(
+            "linkName"
+        ).value.trim();
+
+
+    let url =
+        document.getElementById(
+            "linkUrl"
+        ).value.trim();
+
+
+    if (!name) {
+
+        showMessage(
+            "Entre un nom pour le lien.",
+            true
+        );
+
+        return;
+    }
+
+
+    if (!url) {
+
+        showMessage(
+            "Entre une URL.",
+            true
+        );
+
+        return;
+    }
+
+
+
+    if (
+        !url.startsWith("http://") &&
+        !url.startsWith("https://")
+    ) {
+
+        url =
+            "https://" +
+            url;
+
+    }
+
+
+
+    links.push({
+
+        name: name,
+
+        url: url
+
+    });
+
+
+    saveLibrary();
+
+
+    document.getElementById(
+        "linkName"
+    ).value = "";
+
+
+    document.getElementById(
+        "linkUrl"
+    ).value = "";
+
+
+    renderLinks();
+
+
+    showMessage(
+        "Lien ajouté ✓",
+        false
+    );
+
+}
+
+
+
+// =====================================================
+// UTILISER UN LIEN
+// =====================================================
+
+async function useLink(index) {
+
+
+    const link =
+        links[index];
+
+
+    const {
+        error
+    } = await supabaseClient
+
+        .from("site-content")
+
+        .update({
+
+            link_name:
+                link.name,
+
+            link_url:
+                link.url
+
+        })
+
+        .eq("id", 1);
+
+
+
+    if (error) {
+
+        showMessage(
+            "Erreur : " +
+            error.message,
+            true
+        );
+
+        return;
+    }
+
+
+
+    window.currentLink =
+        link.url;
+
+
+    window.currentLinkName =
+        link.name;
+
+
+    renderLinks();
+
+
+    showMessage(
+        "Lien enregistré ✓",
+        false
+    );
+
+}
+
+
+
+// =====================================================
+// SUPPRIMER
+// =====================================================
+
+async function deleteLink(index) {
+
+
+    const link =
+        links[index];
+
+
+    if (
+        link.url ===
+        window.currentLink
+    ) {
+
+        alert(
+            "Impossible de supprimer le lien actuellement utilisé."
+        );
+
+        return;
+    }
+
+
+    if (
+        !confirm(
+            "Supprimer le lien « " +
+            link.name +
+            " » ?"
+        )
+    ) {
+
+        return;
+    }
+
+
+    links.splice(
+        index,
+        1
+    );
+
+
+    saveLibrary();
+
+
+    renderLinks();
+
+
+    showMessage(
+        "Lien supprimé ✓",
+        false
+    );
+
+}
+
+
+
+// =====================================================
+// MESSAGE
+// =====================================================
+
+function showMessage(
+    text,
+    error
+) {
+
+    const message =
+        document.getElementById(
+            "message"
+        );
+
+
+    message.textContent =
+        text;
+
+
+    message.className =
+        error
+            ? "error"
+            : "success";
+
+
+    setTimeout(
+        function() {
+
+            message.textContent = "";
+
+        },
+        5000
+    );
+
+}
+
+
+
+// =====================================================
+// INITIALISATION
+// =====================================================
+
+async function init() {
+
+    const loggedIn =
+        await checkSession();
+
+
+    if (!loggedIn) {
+        return;
+    }
+
+
+    await loadCurrentLink();
+
+
+    loadLibrary();
+
+}
+
+
+init();
+
+</script>
+
+
+</body>
+
+</html>
