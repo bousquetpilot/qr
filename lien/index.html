@@ -1,16 +1,295 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
+
     <meta charset="UTF-8">
 
-    <!-- DESTINATION DU QR CODE -->
-    <meta http-equiv="refresh" content="0; url=https://www.instagram.com/">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirection...</title>
+    <title>Lien</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            font-family: Arial, Helvetica, sans-serif;
+
+            background: #f2f2f2;
+            color: #111;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .description {
+            color: #777;
+            margin-bottom: 25px;
+        }
+
+        .button {
+            display: block;
+
+            width: 100%;
+
+            padding: 16px;
+
+            background: white;
+            color: #111;
+
+            text-decoration: none;
+
+            border-radius: 12px;
+
+            font-size: 17px;
+
+            box-shadow:
+                0 3px 10px
+                rgba(0,0,0,0.08);
+
+            transition: 0.2s;
+        }
+
+        .button:hover {
+            transform: scale(1.02);
+        }
+
+        #loading {
+            color: #777;
+        }
+
+        #content {
+            display: none;
+        }
+
+    </style>
+
 </head>
 
+
 <body>
-    <p>Redirection...</p>
+
+
+<div class="container">
+
+
+    <div id="loading">
+        Chargement...
+    </div>
+
+
+    <div id="content">
+
+        <div
+            id="linkName"
+            class="title"
+        >
+            Lien
+        </div>
+
+
+        <div class="description">
+            Redirection vers le lien sélectionné
+        </div>
+
+
+        <a
+            id="linkButton"
+            class="button"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+        >
+            🔗 Ouvrir le lien
+        </a>
+
+    </div>
+
+
+</div>
+
+
+
+<script>
+
+
+// =====================================================
+// SUPABASE
+// =====================================================
+
+const SUPABASE_URL =
+    "https://frdmtstprhyrcozuzkcf.supabase.co";
+
+
+const SUPABASE_KEY =
+    "sb_publishable_YkzwqM3E18r1W0ztmJjXug_qJO2htuo";
+
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+
+
+// =====================================================
+// CHARGER LE LIEN ACTUEL
+// =====================================================
+
+async function loadLink() {
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+
+        .from("site-content")
+
+        .select(
+            "link_name, link_url"
+        )
+
+        .eq("id", 1)
+
+        .single();
+
+
+
+    // =================================================
+    // ERREUR
+    // =================================================
+
+    if (error) {
+
+        console.error(
+            "Erreur Supabase :",
+            error
+        );
+
+        document.getElementById(
+            "loading"
+        ).textContent =
+            "Impossible de charger le lien.";
+
+        return;
+    }
+
+
+
+    console.log(
+        "LIEN ACTUEL :",
+        data
+    );
+
+
+
+    // =================================================
+    // VÉRIFIER L'URL
+    // =================================================
+
+    if (!data.link_url) {
+
+        document.getElementById(
+            "loading"
+        ).textContent =
+            "Aucun lien configuré.";
+
+        return;
+    }
+
+
+
+    // =================================================
+    // NOM
+    // =================================================
+
+    document.getElementById(
+        "linkName"
+    ).textContent =
+        data.link_name ||
+        "Ouvrir le lien";
+
+
+
+    // =================================================
+    // URL
+    // =================================================
+
+    let url =
+        data.link_url.trim();
+
+
+    if (
+        !url.startsWith("http://") &&
+        !url.startsWith("https://")
+    ) {
+
+        url =
+            "https://" +
+            url;
+
+    }
+
+
+
+    document.getElementById(
+        "linkButton"
+    ).href =
+        url;
+
+
+
+    // =================================================
+    // AFFICHAGE
+    // =================================================
+
+    document.getElementById(
+        "loading"
+    ).style.display =
+        "none";
+
+
+    document.getElementById(
+        "content"
+    ).style.display =
+        "block";
+
+}
+
+
+
+loadLink();
+
+</script>
+
+
 </body>
+
 </html>
